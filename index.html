@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ОКВ — Общероссийский классификатор валют</title>
+<meta name="description" content="Поиск по ОКВ: числовой код валюты (643, 840, 978), буквенный код ISO 4217 (RUB, USD, EUR) и наименование. Доллар, евро, рубль, юань, тенге, фунт стерлингов, СДР и другие валюты и международные расчётные единицы. Источник — Росстандарт и Банк России.">
+<meta name="theme-color" content="#e8f0f7">
+<link rel="icon" type="image/svg+xml" href="https://prog815.github.io/common-menu/favicon.svg?v=1.0.0">
+<style>
+  :root{
+    --bg:#eef1f7; --panel:#ffffff; --text:#16203a; --muted:#5b6478;
+    --line:#dbe1ec; --line-strong:#c6cfe0;
+    --accent:#3457a6; --accent-weak:#e6ecf8; --accent-text:#27407e;
+    --mark:#fff3a3; --danger:#b42318; --shadow:0 1px 2px rgba(20,30,60,.06),0 6px 18px rgba(20,30,60,.06);
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --radius:12px;
+
+    /* ОКВ-специфичные роли бейджей */
+    --alpha:#2f7d8c; --alpha-bg:#e2f1f3; --alpha-fg:#1d5f6b;     /* буквенный код ISO 4217 */
+    --intl:#7b5ea7;  --intl-bg:#efe9f7;  --intl-fg:#54407a;      /* международная расчётная единица */
+    --review:#b06a00;--review-bg:#fdf0da;--review-fg:#8a5200;    /* требует сверки (977 и т.п.) */
+    --cur:#3457a6;   --cur-bg:#e6ecf8;   --cur-fg:#27407e;       /* валюта страны */
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.45;
+    -webkit-text-size-adjust:100%;
+  }
+  a{color:var(--accent-text)}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+
+  /* header */
+  .hero{padding:18px 0 6px}
+  .hero h1{margin:0 0 4px;font-size:30px;letter-spacing:.2px}
+  .hero p{margin:0;color:var(--muted);font-size:15px;max-width:940px}
+  .hero p b{color:var(--text);font-weight:600}
+  .notice{
+    margin:12px 0 2px;padding:10px 14px;border:1px solid var(--line-strong);
+    border-left:5px solid var(--alpha);border-radius:10px;background:var(--panel);
+    color:var(--text);font-size:13.5px;box-shadow:var(--shadow);
+  }
+  .notice b{font-weight:600}
+  .notice a{white-space:nowrap}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 4px}
+  .chips .lbl{color:var(--muted);font-size:13px;margin-right:2px}
+  .chip{
+    border:1px solid var(--line-strong);background:var(--panel);color:var(--accent-text);
+    border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;font:inherit;
+    transition:background .12s,border-color .12s,color .12s;
+  }
+  .chip:hover{background:var(--accent-weak);border-color:var(--accent)}
+  .chip.mono{font-family:var(--mono);letter-spacing:.3px}
+
+  /* sticky search panel */
+  .panel{
+    position:sticky;top:0;z-index:30;background:rgba(255,255,255,.92);
+    backdrop-filter:saturate(1.1) blur(6px);
+    border-bottom:1px solid var(--line);padding:12px 0;margin-top:0;
+  }
+  .panel .wrap{display:flex;flex-direction:column;gap:10px}
+  .row1{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .searchbox{position:relative;flex:1 1 340px;min-width:220px}
+  #q{
+    width:100%;padding:11px 38px 11px 13px;border:1px solid var(--line-strong);
+    border-radius:10px;font-size:15px;background:var(--panel);color:var(--text);
+  }
+  #q:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+  #q::-webkit-search-cancel-button{display:none;-webkit-appearance:none}
+  .clear{
+    position:absolute;right:8px;top:50%;transform:translateY(-50%);
+    border:none;background:transparent;color:var(--muted);font-size:18px;line-height:1;
+    cursor:pointer;padding:4px 6px;border-radius:8px;display:none;
+  }
+  .clear:hover{background:var(--accent-weak);color:var(--accent-text)}
+  .searchbox.has-val .clear{display:block}
+  select#type{
+    padding:9px 12px;border:1px solid var(--line-strong);border-radius:10px;
+    background:var(--panel);font:inherit;font-size:14px;color:var(--text);cursor:pointer;
+  }
+  select#type:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+
+  /* status line */
+  .statusline{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;
+    color:var(--muted);font-size:13px;padding:2px 2px 0}
+  .statusline .found b{color:var(--text)}
+  .statusline .date{white-space:nowrap;text-align:right}
+
+  /* results */
+  main{padding:14px 0 30px}
+  #state{padding:30px 4px;color:var(--muted);text-align:center}
+  #state.error{color:var(--danger)}
+  #state .retry{margin-top:10px;display:inline-block;padding:9px 14px;border:1px solid var(--line-strong);
+    border-radius:10px;background:var(--panel);color:var(--accent-text);cursor:pointer;font:inherit}
+  #list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  .empty{padding:26px 4px;color:var(--muted);text-align:center}
+
+  /* card */
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--kind,var(--cur));
+    border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);
+  }
+  .card.highlight{outline:3px solid var(--accent);outline-offset:2px}
+  .card-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .code{
+    font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:.3px;
+    background:var(--kind-bg,var(--cur-bg));color:var(--kind-fg,var(--cur-fg));
+    border:1px solid transparent;border-radius:8px;padding:4px 9px;cursor:pointer;white-space:nowrap;
+  }
+  .code:hover{border-color:var(--kind,var(--cur))}
+  .alpha{
+    font-family:var(--mono);font-weight:700;font-size:14px;letter-spacing:.5px;
+    background:var(--alpha-bg);color:var(--alpha-fg);
+    border:1px solid transparent;border-radius:8px;padding:4px 9px;cursor:pointer;white-space:nowrap;
+  }
+  .alpha:hover{border-color:var(--alpha)}
+  .copy-full{
+    margin-left:auto;border:1px dashed var(--line-strong);background:#fbfcfe;color:var(--muted);
+    border-radius:8px;padding:4px 9px;cursor:pointer;font:inherit;font-size:13px;white-space:nowrap;
+  }
+  .copy-full:hover{border-color:var(--accent);color:var(--accent-text);background:var(--accent-weak)}
+  .badge{
+    font:inherit;font-size:12px;border-radius:999px;padding:4px 10px;cursor:pointer;
+    border:1px solid transparent;white-space:nowrap;
+  }
+  .badge-intl{background:var(--intl-bg);color:var(--intl-fg);border-color:var(--intl)}
+  .badge-intl:hover{filter:brightness(.97)}
+  .badge-review{background:var(--review-bg);color:var(--review-fg);border-color:var(--review);cursor:default}
+  .name{margin-top:9px;font-size:15.5px;font-weight:600}
+  .meta-row{margin-top:7px;font-size:13.5px;display:flex;flex-wrap:wrap;gap:6px;align-items:baseline}
+  .meta-row .lbl{color:var(--muted);white-space:nowrap}
+  .meta-row .val{color:var(--text)}
+  .notes-row{margin-top:7px;font-size:13.5px;color:var(--text);
+    background:var(--accent-weak);border-radius:8px;padding:6px 9px}
+  .notes-row .lbl{color:var(--accent-text);font-weight:600}
+  .hint-row{margin-top:7px;font-size:12.5px;border-radius:8px;padding:6px 9px}
+  .hint-intl{background:var(--intl-bg);color:var(--intl-fg)}
+  .hint-review{background:var(--review-bg);color:var(--review-fg)}
+  mark{background:var(--mark);border-radius:3px;padding:0 1px;color:inherit}
+
+  .more{display:flex;justify-content:center;margin:16px 0 4px}
+  .more button{
+    padding:11px 18px;border:1px solid var(--line-strong);border-radius:10px;background:var(--panel);
+    color:var(--accent-text);font:inherit;font-size:14px;cursor:pointer;box-shadow:var(--shadow);
+  }
+  .more button:hover{border-color:var(--accent);background:var(--accent-weak)}
+  .more button:disabled{opacity:.5;cursor:default}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);background:var(--panel)}
+  footer .wrap{padding:18px 16px 30px;color:var(--muted);font-size:14px}
+  footer h4{margin:0 0 8px;color:var(--text);font-size:15px}
+  footer .lead{margin:0 0 12px;color:var(--text)}
+  footer .lead b{font-weight:600}
+  footer .links{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;margin:0 0 10px}
+  footer .links .cap{color:var(--muted)}
+  footer .links a{white-space:nowrap}
+  footer .disc{margin:6px 0 0;font-size:13px;color:#6b7385}
+
+  /* floating buttons + toast */
+  .fab{position:fixed;right:16px;display:flex;flex-direction:column;gap:8px;z-index:40}
+  .fab.up{bottom:74px}.fab.down{bottom:16px}
+  .fab button{
+    width:42px;height:42px;border-radius:50%;border:1px solid var(--line-strong);background:var(--panel);
+    color:var(--accent-text);font-size:18px;cursor:pointer;box-shadow:var(--shadow);display:none;
+  }
+  .fab button:hover{background:var(--accent-weak);border-color:var(--accent)}
+  .toast{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
+    background:#16203a;color:#eaf0ff;padding:10px 16px;border-radius:10px;font-size:14px;
+    box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:60;
+    max-width:90vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:720px){
+    .hero h1{font-size:25px}
+    .row1{flex-direction:column;align-items:stretch}
+    .row1>*{width:100%}
+    .searchbox{flex:auto}
+    select#type{justify-content:space-between}
+    .statusline{flex-direction:column;gap:2px}
+    .statusline .date{text-align:left}
+    .copy-full{margin-left:0}
+  }
+</style>
+</head>
+<body>
+<!--
+  Версия каталога после добавления ОКВ — ?v=2.6.0.
+  Порядок публикации:
+    1) сначала обновить prog815/common-menu/menu.js (добавить пункт ОКВ в projectsCatalog
+       после ОКФС: { label:'ОКВ', title:'Справочник ОКВ', url:'https://prog815.github.io/okv/',
+       match:'/okv/', goal:'nav_okv' }) и закоммитить;
+    2) убедиться, что https://prog815.github.io/common-menu/menu.js?v=2.6.0 отдаёт 200;
+    3) затем публиковать этот index.html с ?v=2.6.0 и batch-поднять ?v= во всех справочниках.
+  Пока 2.6.0 не залит в каталог — страница всё равно работает, меню просто не покажет пункт ОКВ.
+  match:'/okv/' не является подстрокой других match (/okfs/, /okei/, /okato/, /okopf/, /okogu/) —
+  подсветка активного пункта корректна.
+-->
+<script src="https://prog815.github.io/common-menu/menu.js?v=2.6.0"></script>
+<common-projects-menu></common-projects-menu>
+
+<div class="wrap hero">
+  <h1>ОКВ</h1>
+  <p>Общероссийский классификатор валют.
+     Поиск по <b>числовому коду</b> (643, 840, 978), <b>буквенному коду ISO 4217</b> (RUB, USD, EUR)
+     и <b>наименованию</b>: доллар, евро, рубль, юань, тенге, фунт стерлингов, СДР и другие валюты
+     и международные расчётные единицы. Справочник плоский — список записей без дерева.</p>
+
+  <div class="notice">
+    <b>ОКВ — это код валюты или международной расчётной единицы.</b>
+    ОКВ <b>не устанавливает курс</b>: действующие курсы рубля, доллара, евро и других валют —
+    на сайте <a href="https://www.cbr.ru/" rel="noopener" target="_blank">Банка России</a>.
+  </div>
+
+  <div class="chips" id="chips" aria-label="Популярные запросы">
+    <span class="lbl">Популярные:</span>
+  </div>
+</div>
+
+<div class="panel" id="panel">
+  <div class="wrap">
+    <div class="row1">
+      <div class="searchbox" id="searchbox">
+        <input id="q" type="search" autocomplete="off" spellcheck="false"
+               placeholder="Код (643, 840), буква (USD, RUB) или слово: доллар, евро, юань, СДР…"
+               aria-label="Поиск по ОКВ">
+        <button class="clear" id="clear" type="button" title="Очистить запрос" aria-label="Очистить запрос">×</button>
+      </div>
+      <select id="type" aria-label="Фильтр по типу записи"></select>
+    </div>
+    <div class="statusline">
+      <div class="found" id="found">Загрузка…</div>
+      <div class="date" id="dateLine"></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div id="listView">
+    <div id="state">Загрузка данных справочника…</div>
+    <ul id="list" hidden></ul>
+    <div class="more" id="moreWrap" hidden>
+      <button id="more" type="button">Показать ещё</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <h4>О справочнике</h4>
+    <p class="lead" id="footLead"></p>
+    <div class="links">
+      <span class="cap">Источник данных (машиночитаемый снимок):</span>
+      <a href="https://classifikators.ru/okv" rel="noopener" target="_blank">classifikators.ru — ОКВ</a>
+    </div>
+    <div class="links">
+      <span class="cap">Первоисточники и текстовые редакции для сверки:</span>
+      <a href="https://protect.gost.ru/classificators/details/abd21f4b-43bd-437e-b987-9b8c0de2c480" rel="noopener" target="_blank">Росстандарт (ОК 014-2000)</a>
+      <a href="https://cbr.ru/development/mcirabis/KV" rel="noopener" target="_blank">Банк России (классификатор валют)</a>
+      <a href="https://www.consultant.ru/document/cons_doc_LAW_31966/" rel="noopener" target="_blank">КонсультантПлюс</a>
+      <a href="https://internet.garant.ru/#/document/12122754" rel="noopener" target="_blank">Гарант</a>
+      <a href="https://docs.cntd.ru/document/842501138" rel="noopener" target="_blank">Кодекс</a>
+      <a href="https://github.com/prog815/okv" rel="noopener" target="_blank">О справочнике</a>
+    </div>
+    <p class="disc" id="footDisc"></p>
+  </div>
+</footer>
+
+<div class="fab up"><button id="toTop" type="button" title="Наверх" aria-label="Наверх">↑</button></div>
+<div class="fab down"><button id="toBottom" type="button" title="Вниз" aria-label="Вниз">↓</button></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- конфигурация ----------
+  var BASE = location.href.replace(/[^/]*$/,"");
+  var DATA_GZ  = BASE + "okv.json.gz";
+  var DATA_JSON= BASE + "okv.json";
+  var META_GZ  = BASE + "okv_meta.json.gz";
+  var META_JSON= BASE + "okv_meta.json";
+
+  var PAGE_SIZE = 20;
+  var DEBOUNCE_MS = 180;
+  var SCROLL_THRESHOLD = 300;
+  var EMPTY_PQ = {digits:"", alpha:"", tokens:[], rawTerms:[], full:""};
+
+  // формат веб-записи ОКВ (контракт тетрадки CELL 4/5):
+  // [code, iso_alpha, name_ru, country, notes, aliases, needs_review, is_intl]
+  var F_CODE=0, F_ALPHA=1, F_NAME=2, F_COUNTRY=3, F_NOTES=4, F_ALIASES=5, F_REVIEW=6, F_INTL=7;
+
+  var TYPE_ALL="";
+  var TYPE_CURRENCY="currency";
+  var TYPE_UNIT="unit";
+
+  var POPULAR = [
+    "доллар","евро","рубль","юань","тенге","фунт стерлингов","иена","СДР",
+    "USD","EUR","RUB","CNY"
+  ];
+  var POPULAR_MONO = {"USD":1,"EUR":1,"RUB":1,"CNY":1};
+
+  // ---------- состояние ----------
+  var RECORDS = [];
+  var BY_CODE = {};
+  var countCurrency=0, countUnit=0, countReview=0, countNotes=0;
+  var filtered = [];
+  var shown = PAGE_SIZE;
+  var META = null;
+
+  // ---------- dom ----------
+  var $ = function(id){return document.getElementById(id);};
+  var elState=$("state"), elList=$("list"), elMoreWrap=$("moreWrap"), elMore=$("more");
+  var elQ=$("q"), elClear=$("clear"), elBox=$("searchbox"), elType=$("type"),
+      elFound=$("found"), elDate=$("dateLine"),
+      elChips=$("chips"), elFootLead=$("footLead"), elFootDisc=$("footDisc"), elToast=$("toast"),
+      elTop=$("toTop"), elBottom=$("toBottom"), elListView=$("listView");
+
+  // ---------- утилиты ----------
+  function norm(s){
+    s = String(s==null?"":s).toLowerCase().replace(/ё/g,"е");
+    s = s.replace(/[^\p{L}\p{N}]+/gu," ");
+    s = s.replace(/\s+/g," ").trim();
+    return s;
+  }
+  function normAlpha(s){
+    // буквенный код сравниваем без разделителей и в верхнем регистре
+    return String(s==null?"":s).toUpperCase().replace(/[^A-Z0-9]/g,"");
+  }
+  function escHtml(s){
+    return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function escRe(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }
+  function fmtNum(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u00a0"); }
+  function plural(n,forms){
+    var n10=n%10, n100=n%100;
+    if(n10===1 && n100!==11) return forms[0];
+    if(n10>=2 && n10<=4 && (n100<10||n100>=20)) return forms[1];
+    return forms[2];
+  }
+  function isUnit(r){ return r.isIntl==="1"; }
+  function isReview(r){ return r.review==="1"; }
+
+  // ---------- загрузка ----------
+  async function fetchJson(gzUrl, jsonUrl){
+    try{
+      if (typeof DecompressionStream === "function"){
+        var r = await fetch(gzUrl,{cache:"no-store"});
+        if (r.ok){
+          var ds = new DecompressionStream("gzip");
+          var decompressed = r.body.pipeThrough(ds);
+          var text = await new Response(decompressed).text();
+          return JSON.parse(text);
+        }
+      }
+    }catch(e){ /* fallback */ }
+    var r2 = await fetch(jsonUrl,{cache:"no-store"});
+    if(!r2.ok) throw new Error("не удалось получить файл, код ответа "+r2.status);
+    return await r2.json();
+  }
+
+  async function loadAll(){
+    elState.hidden=false; elState.className=""; elState.textContent="Загрузка данных справочника…";
+    elList.hidden=true; elList.innerHTML=""; elMoreWrap.hidden=true; elMore.textContent="";
+    elFound.textContent="Загрузка…"; elDate.textContent="";
+
+    var data, meta=null;
+    try{
+      data = await fetchJson(DATA_GZ, DATA_JSON);
+    }catch(err){
+      elState.className="error";
+      elState.innerHTML = "Не удалось загрузить данные справочника.<br>"+
+        "<small>"+escHtml(err&&err.message||err)+"</small><br>"+
+        '<button class="retry" id="retryBtn" type="button">Повторить</button>';
+      var rb=$("retryBtn"); if(rb) rb.addEventListener("click", loadAll);
+      return;
+    }
+    try{ meta = await fetchJson(META_GZ, META_JSON); }catch(e){ meta=null; }
+
+    META = meta;
+    buildIndexes(data);
+    buildTypeSelect();
+    renderChips();
+    renderFooter();
+    renderDateLine();
+    parseUrlAndApply();
+  }
+
+  // ---------- построение индексов ----------
+  function buildIndexes(arr){
+    RECORDS = []; BY_CODE = {};
+    countCurrency=0; countUnit=0; countReview=0; countNotes=0;
+    if(!Array.isArray(arr)) arr=[];
+
+    for(var i=0;i<arr.length;i++){
+      var it = arr[i]||[];
+      var code = String(it[F_CODE]==null?"":it[F_CODE]).trim();
+      if(!code) continue;
+
+      var alpha  = String(it[F_ALPHA]==null?"":it[F_ALPHA]).trim();
+      var name   = String(it[F_NAME]==null?"":it[F_NAME]).trim();
+      var country= String(it[F_COUNTRY]==null?"":it[F_COUNTRY]).trim();
+      var notes  = String(it[F_NOTES]==null?"":it[F_NOTES]).trim();
+      var aliases= String(it[F_ALIASES]==null?"":it[F_ALIASES]).trim();
+      var review = String(it[F_REVIEW]==null?"":it[F_REVIEW]).trim();
+      var intl   = String(it[F_INTL]==null?"":it[F_INTL]).trim();
+
+      var nName = norm(name);
+      var nCountry = norm(country);
+      var nAliases = norm(aliases.replace(/[|]/g," "));
+      var nNotes = norm(notes);
+      var aAlpha = normAlpha(alpha);
+
+      var rec = {
+        code:code, alpha:alpha, name:name, country:country, notes:notes,
+        aliases:aliases, review:review, isIntl:intl,
+        nName:nName, nCountry:nCountry, nAliases:nAliases, nNotes:nNotes, aAlpha:aAlpha,
+        // поисковый blob: код + буква + название + страны + алиасы + пояснение
+        // (алиасы участвуют в поиске, но в карточке не показываются)
+        blob: norm(code+" "+alpha+" "+name+" "+country+" "+aliases.replace(/[|]/g," ")+" "+notes)
+      };
+
+      RECORDS.push(rec);
+      BY_CODE[code] = rec;
+
+      if(intl==="1") countUnit++; else countCurrency++;
+      if(review==="1") countReview++;
+      if(notes) countNotes++;
+    }
+
+    // натуральный порядок ОКВ = по числовому коду (008, 012, … 999),
+    // как отсортировано в тетрадке; ведущие нули сохраняются строкой.
+    RECORDS.sort(function(a,b){ return a.code < b.code ? -1 : a.code > b.code ? 1 : 0; });
+  }
+
+  // ---------- фильтр по типу ----------
+  function buildTypeSelect(){
+    var opts = [
+      {v:TYPE_ALL,     label:"Все записи",                 n:RECORDS.length},
+      {v:TYPE_CURRENCY,label:"Валюты стран",               n:countCurrency},
+      {v:TYPE_UNIT,    label:"Международные расчётные единицы", n:countUnit}
+    ];
+    var html="";
+    opts.forEach(function(o){
+      html += '<option value="'+escHtml(o.v)+'">'+escHtml(o.label+" ("+o.n+")")+'</option>';
+    });
+    elType.innerHTML = html;
+  }
+
+  function renderChips(){
+    var frag = document.createDocumentFragment();
+    POPULAR.forEach(function(p){
+      var b=document.createElement("button");
+      b.type="button"; b.className="chip"+(POPULAR_MONO[p]?" mono":""); b.textContent=p;
+      b.title="Искать: "+p;
+      b.addEventListener("click",function(){
+        elQ.value=p; syncClear(); applyFilters(); syncUrl(); focusTop();
+      });
+      frag.appendChild(b);
+    });
+    elChips.appendChild(frag);
+  }
+
+  function renderDateLine(){
+    var parts=[];
+    if(META && META.standard) parts.push(META.standard);
+    if(META && META.change) parts.push(META.change);
+    if(META && META.effective_date) parts.push("введено "+fmtRuDate(META.effective_date));
+    if(META && META.prepared_date) parts.push("снимок источника "+META.prepared_date);
+    elDate.textContent = parts.join(" · ");
+  }
+  function fmtRuDate(iso){
+    var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso||""));
+    if(!m) return iso||"";
+    return m[3]+"."+m[2]+"."+m[1];
+  }
+
+  function renderFooter(){
+    var total = RECORDS.length;
+    var s = "В справочнике "+fmtNum(total)+" "+plural(total,["запись","записи","записей"])+
+            ": "+fmtNum(countCurrency)+" "+plural(countCurrency,["валюта страны","валюты стран","валют стран"])+
+            " и "+fmtNum(countUnit)+" "+plural(countUnit,["международная расчётная единица","международные расчётные единицы","международных расчётных единиц"])+
+            (countReview? "; "+fmtNum(countReview)+" "+plural(countReview,["запись помечена","записи помечены","записей помечено"])+" на сверку буквенного кода":"")+
+            ".";
+    elFootLead.innerHTML = escHtml(s).replace(/(\d[\d\u00a0.]*)/g,"<b>$1</b>");
+
+    var change = (META && META.change) ? META.change : "текущая редакция";
+    var prep   = (META && META.prepared_date) ? ("файл от "+META.prepared_date) : "";
+    var d = "Справочник носит информационный характер и не является точной копией официального документа. "+
+            "Машиночитаемый снимок подготовлен на основе okv.xlsx сайта classifikators.ru (вторичный агрегатор, "+change+(prep?", "+prep:"")+"). "+
+            "Перед применением в документах, имеющих юридическую силу, сверяйтесь с действующей редакцией Общероссийского классификатора валют ОК (МК (ИСО 4217) 003-97) 014-2000 по первоисточникам: Росстандарт и Банк России. "+
+            "ОКВ не содержит курсов валют — для курса обращайтесь к Банку России. "+
+            "Записи с пометкой «сверить» имеют буквенный код, восстановленный транслитерацией из кириллического артефакта источника, и требуют ручной проверки. "+
+            "Международные расчётные единицы (СДР и другие) не являются валютами отдельных государств.";
+    elFootDisc.textContent = d;
+  }
+
+  // ---------- поиск / фильтрация ----------
+  function prepareQuery(q){
+    var raw = String(q||"");
+    var digits = raw.replace(/[^0-9]/g,"");
+    var alpha  = normAlpha(raw);
+    var n = norm(raw);
+    var tokens = n ? n.split(" ").filter(Boolean) : [];
+    var rawTerms = raw.trim().split(/\s+/).filter(Boolean);
+    return {digits:digits, alpha:alpha, tokens:tokens, rawTerms:rawTerms, full:tokens.join(" ")};
+  }
+
+  function scoreRecord(r, pq){
+    var score=0, hasQuery = pq.digits || pq.alpha || pq.tokens.length;
+
+    // числовой код: точное совпадение > префикс (префикс только при длине >=2,
+    // чтобы одиночная цифра не тянула 840/818/826 как топ)
+    if(pq.digits){
+      if(r.code === pq.digits) score += 100;
+      else if(pq.digits.length>=2 && r.code.indexOf(pq.digits)===0) score += 70;
+    }
+
+    // буквенный код ISO 4217: точное > префикс
+    if(pq.alpha && r.aAlpha){
+      if(r.aAlpha === pq.alpha) score += 90;
+      else if(r.aAlpha.indexOf(pq.alpha)===0) score += 55;
+    }
+
+    // текстовые токены: AND по blob (в blob входят и алиасы — поиск по синонимам работает)
+    if(pq.tokens.length){
+      for(var i=0;i<pq.tokens.length;i++){
+        if(r.blob.indexOf(pq.tokens[i]) < 0) return null; // AND
+      }
+      var full = pq.full;
+      if(r.nName === full) score += 60;
+      else if(r.nName.indexOf(full)===0) score += 50;
+      else if(r.nName.indexOf(full) >= 0) score += 35;
+
+      for(var k=0;k<pq.tokens.length;k++){
+        var t=pq.tokens[k];
+        if(r.nName.indexOf(t)>=0) score += 5;
+        if(r.nCountry.indexOf(t)>=0) score += 4;
+        if(r.nAliases.indexOf(t)>=0) score += 3;
+        if(r.nNotes.indexOf(t)>=0) score += 2;
+      }
+    }
+
+    if(hasQuery && score<=0) return null;
+    return score;
+  }
+
+  function applyFilters(){
+    var type = elType.value || TYPE_ALL;
+    var pq = prepareQuery(elQ.value);
+    var hasQuery = !!(pq.digits || pq.alpha || pq.tokens.length);
+
+    var base = [];
+    for(var i=0;i<RECORDS.length;i++){
+      var r = RECORDS[i];
+      if(type===TYPE_UNIT && !isUnit(r)) continue;
+      if(type===TYPE_CURRENCY && isUnit(r)) continue;
+      base.push(r);
+    }
+
+    if(hasQuery){
+      var scored=[];
+      for(var a=0;a<base.length;a++){
+        var s = scoreRecord(base[a], pq);
+        if(s!==null) scored.push({r:base[a], s:s});
+      }
+      scored.sort(function(x,y){
+        if(y.s!==x.s) return y.s-x.s;
+        return x.r.code < y.r.code ? -1 : x.r.code > y.r.code ? 1 : 0;
+      });
+      filtered = scored.map(function(o){return o.r;});
+    }else{
+      filtered = base;
+    }
+
+    filtered._pq = pq;
+    filtered._hasQuery = hasQuery;
+
+    shown = PAGE_SIZE;
+    renderList();
+  }
+
+  // ---------- рендер списка (всегда плоский, без группировки) ----------
+  function renderList(){
+    var pq = filtered._pq || EMPTY_PQ;
+    var terms = pq.rawTerms || [];
+    var digits = pq.digits || "";
+    var alphaQ = pq.alpha || "";
+    var total = filtered.length;
+
+    if(total===0){
+      elList.hidden=true; elList.innerHTML="";
+      elState.hidden=false; elState.className="";
+      elState.innerHTML = '<div class="empty">Ничего не найдено. Попробуйте сократить запрос или снять фильтры.</div>';
+      elFound.innerHTML = "Найдено: <b>0</b>";
+      elMore.textContent=""; elMoreWrap.hidden=true;
+      return;
+    }
+
+    var visible = Math.min(shown, total);
+    elFound.innerHTML = "Найдено: <b>"+total+"</b> · Показано: <b>"+visible+"</b>";
+
+    elState.hidden=true; elList.hidden=false;
+    var frag = document.createDocumentFragment();
+    var slice = filtered.slice(0, shown);
+    for(var j=0;j<slice.length;j++) frag.appendChild(buildCard(slice[j], terms, digits, alphaQ));
+    elList.innerHTML=""; elList.appendChild(frag);
+
+    if(visible < total){
+      var next = Math.min(shown+PAGE_SIZE, total);
+      elMore.textContent = "Показать ещё +"+(next-visible)+" (показано "+visible+" из "+total+")";
+      elMore.disabled=false;
+      elMoreWrap.hidden=false;
+    }else{
+      elMore.textContent="";
+      elMoreWrap.hidden=true;
+    }
+  }
+
+  // ---------- подсветка ----------
+  function hlText(text, rawTerms){
+    var safe = escHtml(text);
+    if(!rawTerms || !rawTerms.length) return safe;
+    var re = new RegExp("("+rawTerms.map(escRe).join("|")+")","gi");
+    return safe.replace(re,"<mark>$1</mark>");
+  }
+  function hlCode(code, digits){
+    var safe = escHtml(code);
+    if(digits && code.indexOf(digits)===0){
+      return "<mark>"+escHtml(digits)+"</mark>"+escHtml(code.slice(digits.length));
+    }
+    if(digits && code.indexOf(digits)>=0){
+      return safe.replace(new RegExp("("+escRe(digits)+")"),"<mark>$1</mark>");
+    }
+    return safe;
+  }
+  function hlAlpha(alpha, alphaQ){
+    var safe = escHtml(alpha);
+    var up = String(alpha||"").toUpperCase();
+    if(alphaQ && up.indexOf(alphaQ)===0 && alphaQ){
+      return "<mark>"+escHtml(alpha.slice(0,alphaQ.length))+"</mark>"+escHtml(alpha.slice(alphaQ.length));
+    }
+    return safe;
+  }
+
+  // ---------- карточка ----------
+  function buildCard(r, terms, digits, alphaQ){
+    var li = document.createElement("li");
+    var card = document.createElement("article");
+    card.className="card";
+    card.dataset.code = r.code;
+
+    var unit = isUnit(r), review = isReview(r);
+    var kind = unit ? "var(--intl)" : "var(--cur)";
+    var kindBg = unit ? "var(--intl-bg)" : "var(--cur-bg)";
+    var kindFg = unit ? "var(--intl-fg)" : "var(--cur-fg)";
+    card.style.setProperty("--kind", kind);
+    card.style.setProperty("--kind-bg", kindBg);
+    card.style.setProperty("--kind-fg", kindFg);
+
+    var top = document.createElement("div"); top.className="card-top";
+
+    // числовой код
+    var codeBtn = document.createElement("button");
+    codeBtn.type="button"; codeBtn.className="code";
+    codeBtn.innerHTML = hlCode(r.code, digits);
+    codeBtn.title = "Копировать числовой код: "+r.code;
+    codeBtn.dataset.act="copy-code"; codeBtn.dataset.val=r.code;
+    top.appendChild(codeBtn);
+
+    // буквенный код ISO 4217
+    if(r.alpha){
+      var alphaBtn = document.createElement("button");
+      alphaBtn.type="button"; alphaBtn.className="alpha";
+      alphaBtn.innerHTML = hlAlpha(r.alpha, alphaQ);
+      alphaBtn.title = (review? "Буквенный код восстановлён из артефакта источника. " : "")+
+                       "Копировать буквенный код: "+r.alpha;
+      alphaBtn.dataset.act="copy-alpha"; alphaBtn.dataset.val=r.alpha;
+      top.appendChild(alphaBtn);
+    }
+
+    // бейдж: международная расчётная единица (кликабельный фильтр по типу)
+    if(unit){
+      var ib = document.createElement("button");
+      ib.type="button"; ib.className="badge badge-intl";
+      ib.textContent="Расчётная единица";
+      ib.title="Фильтровать: только международные расчётные единицы";
+      ib.dataset.act="filter-unit";
+      top.appendChild(ib);
+    }
+
+    // бейдж: требует сверки (информационный, не фильтр)
+    if(review){
+      var rb = document.createElement("span");
+      rb.className="badge badge-review";
+      rb.textContent="Сверить буквенный код";
+      rb.title="Буквенный код восстановлён из артефакта источника; требует ручной сверки";
+      top.appendChild(rb);
+    }
+
+    // копировать всё
+    var copyFull = document.createElement("button");
+    copyFull.type="button"; copyFull.className="copy-full";
+    var fullVal = r.code + "; " + (r.alpha? r.alpha+"; " : "") + r.name;
+    copyFull.textContent = "📋 код + название";
+    copyFull.title = "Скопировать: "+fullVal;
+    copyFull.dataset.act="copy-full"; copyFull.dataset.val=fullVal;
+    top.appendChild(copyFull);
+
+    card.appendChild(top);
+
+    // наименование
+    var name = document.createElement("div"); name.className="name";
+    name.innerHTML = hlText(r.name, terms);
+    card.appendChild(name);
+
+    // страны
+    if(r.country){
+      var cr = document.createElement("div"); cr.className="meta-row";
+      var cl = document.createElement("span"); cl.className="lbl";
+      cl.textContent = unit ? "Используется / эмитент:" : "Страны:";
+      var cv = document.createElement("span"); cv.className="val";
+      cv.innerHTML = hlText(r.country, terms);
+      cr.appendChild(cl); cr.appendChild(cv);
+      card.appendChild(cr);
+    }
+
+    // пояснение
+    if(r.notes){
+      var nr = document.createElement("div"); nr.className="notes-row";
+      nr.innerHTML = '<span class="lbl">Пояснение: </span>'+hlText(r.notes, terms);
+      card.appendChild(nr);
+    }
+
+    // подсказки по флагу
+    if(unit){
+      var hu = document.createElement("div"); hu.className="hint-row hint-intl";
+      hu.textContent = "Международная расчётная единица — не валюта отдельного государства.";
+      card.appendChild(hu);
+    }
+    if(review){
+      var hr = document.createElement("div"); hr.className="hint-row hint-review";
+      hr.textContent = "Буквенный код восстановлен транслитерацией из кириллического артефакта источника (например, ВАМ → BAM). Перед официальным применением сверьте с первоисточником.";
+      card.appendChild(hr);
+    }
+
+    li.appendChild(card);
+    return li;
+  }
+
+  // ---------- навигация ----------
+  function openCode(code){
+    var rec = BY_CODE[code];
+    if(!rec) return;
+    elQ.value=code; syncClear();
+    elType.value=TYPE_ALL;
+    applyFilters(); syncUrl(); focusCode(code);
+  }
+  function focusCode(code){
+    setTimeout(function(){
+      var el = document.querySelector('article.card[data-code="'+code+'"]');
+      if(!el) return;
+      document.querySelectorAll(".card.highlight").forEach(function(node){ node.classList.remove("highlight"); });
+      el.classList.add("highlight");
+      el.scrollIntoView({behavior:"smooth", block:"center"});
+      setTimeout(function(){ el.classList.remove("highlight"); }, 1800);
+    }, 30);
+  }
+
+  // ---------- URL ----------
+  function parseUrlAndApply(){
+    var sp = new URLSearchParams(location.search);
+    var q = sp.get("q")||"";
+    var type = sp.get("type")||"";
+
+    elQ.value = q; syncClear();
+    elType.value = (type===TYPE_CURRENCY || type===TYPE_UNIT) ? type : TYPE_ALL;
+    applyFilters();
+  }
+  function syncUrl(){
+    var sp = new URLSearchParams();
+    var q = elQ.value.trim(); if(q) sp.set("q", q);
+    if(elType.value) sp.set("type", elType.value);
+    var qs = sp.toString();
+    var url = location.pathname + (qs?("?"+qs):"");
+    try{ history.replaceState(null,"",url); }catch(e){}
+  }
+
+  // ---------- копирование + тост ----------
+  var toastTimer=null;
+  function toast(msg){
+    elToast.textContent = msg;
+    elToast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ elToast.classList.remove("show"); }, 1600);
+  }
+  function copyText(text, label){
+    var done=function(){ toast(label); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){ fallbackCopy(text); done(); });
+    }else{ fallbackCopy(text); done(); }
+  }
+  function fallbackCopy(text){
+    var ta=document.createElement("textarea");
+    ta.value=text; ta.setAttribute("readonly",""); ta.style.position="absolute"; ta.style.left="-9999px";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); }catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  function onListClick(e){
+    var btn = e.target.closest("[data-act]");
+    if(!btn) return;
+    var act = btn.dataset.act, val = btn.dataset.val;
+    if(act==="copy-code") copyText(val, "Числовой код "+val+" скопирован");
+    else if(act==="copy-alpha") copyText(val, "Буквенный код "+val+" скопирован");
+    else if(act==="copy-full") copyText(val, "Скопировано: "+val);
+    else if(act==="filter-unit"){ elType.value=TYPE_UNIT; applyFilters(); syncUrl(); focusTop(); }
+  }
+
+  // ---------- события ----------
+  function syncClear(){ elBox.classList.toggle("has-val", !!elQ.value); }
+  function focusTop(){ window.scrollTo({top:0,behavior:"smooth"}); }
+
+  var deb=null;
+  function onInput(){
+    syncClear();
+    clearTimeout(deb);
+    deb=setTimeout(function(){ applyFilters(); syncUrl(); }, DEBOUNCE_MS);
+  }
+
+  elQ.addEventListener("input", onInput);
+  elQ.addEventListener("search", function(){ syncClear(); applyFilters(); syncUrl(); });
+  elClear.addEventListener("click", function(){ elQ.value=""; syncClear(); applyFilters(); syncUrl(); elQ.focus(); });
+  elType.addEventListener("change", function(){ applyFilters(); syncUrl(); });
+  elMore.addEventListener("click", function(){ shown += PAGE_SIZE; renderList(); });
+  elList.addEventListener("click", onListClick);
+
+  window.addEventListener("popstate", function(){ parseUrlAndApply(); });
+
+  function onScroll(){
+    var y = window.scrollY || document.documentElement.scrollTop || 0;
+    var docH = document.documentElement.scrollHeight;
+    var winH = window.innerHeight;
+    elTop.style.display = (y>SCROLL_THRESHOLD) ? "block":"none";
+    elBottom.style.display = (y>SCROLL_THRESHOLD && (y+winH) < (docH-40)) ? "block":"none";
+  }
+  window.addEventListener("scroll", onScroll, {passive:true});
+  window.addEventListener("resize", onScroll);
+  elTop.addEventListener("click", function(){ window.scrollTo({top:0,behavior:"smooth"}); });
+  elBottom.addEventListener("click", function(){ window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"}); });
+
+  syncClear();
+  loadAll();
+})();
+</script>
+</body>
+</html>
