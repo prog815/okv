@@ -2,12 +2,12 @@ name: Daily OKV Update
 
 on:
   schedule:
-    - cron: '0 18 * * *'      # 18:00 UTC = 21:00 МСК (разнесено с ОКВЭД2 05:00 / ОКПД2 11:30 / ОКТМО 12:00 / ОКЕИ 13:00 / ОКАТО 14:00 / ОКОГУ 15:00 / ОКОПФ 16:00 / ОКФС 17:00)
+    - cron: '0 18 * * *'      # 18:00 UTC = 21:00 МСК (после ОКФС 17:00; слоты: ОКВЭД2 05:00 / ОКПД2 11:30 / ОКТМО 12:00 / ОКЕИ 13:00 / ОКАТО 14:00 / ОКОГУ 15:00 / ОКОПФ 16:00 / ОКФС 17:00 / ОКВ 18:00)
   workflow_dispatch:          # ручной запуск
 
 jobs:
   sync-and-trigger:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04     # пин образа: убирает notice про миграцию ubuntu-latest -> 26.04 (actions/runner-images#14748)
     timeout-minutes: 10
     permissions:
       contents: write         # встроенный токен Actions для коммита
@@ -107,22 +107,11 @@ jobs:
           if git diff --cached --quiet; then
             echo "Изменений нет - данные уже актуальны"
           else
-            # У ОКВ нет поля source_date в смысле Росстата; читаем цепочкой фолбэков.
-            # Фактически для текущего снимка classifikators напечатается prepared_date
-            # (13.01.2026) - это и есть "дата, к которой актуален снимок источника".
-            SOURCE_DATE=$(python - <<'PYEOF'
-            import json, sys
-            try:
-                m = json.load(open('okv_meta.json', encoding='utf-8'))
-            except Exception:
-                print('?'); sys.exit(0)
-            for k in ('source_date', 'prepared_date', 'effective_date', 'generated_date'):
-                v = m.get(k)
-                if v:
-                    print(v); sys.exit(0)
-            print('?')
-            PYEOF
-            )
+            # ОКВ: поля source_date (в смысле снимка Росстата) нет; читаем цепочкой or.
+            # Для текущего снимка classifikators напечатается prepared_date = 13.01.2026.
+            # Однострочный python -c (БЕЗ heredoc!) - heredoc внутри $() в run:| ломает
+            # терминатор из-за отступов YAML и даёт exit 2 (грабли прогона #1). Не менять на heredoc.
+            SOURCE_DATE=$(python -c "import json; m=json.load(open('okv_meta.json')); print(m.get('source_date') or m.get('prepared_date') or m.get('effective_date') or m.get('generated_date') or '?')" 2>/dev/null || echo '?')
             git commit -m "Auto-update: OKV data from kernel output (source $SOURCE_DATE) [skip ci]"
             git push
             echo "Изменения запушены"
