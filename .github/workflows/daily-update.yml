@@ -1,0 +1,137 @@
+name: Daily OKV Update
+
+on:
+  schedule:
+    - cron: '0 18 * * *'      # 18:00 UTC = 21:00 МСК (разнесено с ОКВЭД2 05:00 / ОКПД2 11:30 / ОКТМО 12:00 / ОКЕИ 13:00 / ОКАТО 14:00 / ОКОГУ 15:00 / ОКОПФ 16:00 / ОКФС 17:00)
+  workflow_dispatch:          # ручной запуск
+
+jobs:
+  sync-and-trigger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write         # встроенный токен Actions для коммита
+    env:
+      # API-токен Kaggle НОВОГО образца (CLI >= 1.8.0).
+      # В репозитории секрет называется KAGGLE_API_TOKEN_OKV, внутри него чистый токен.
+      # В Kaggle токен называется gha-okv.
+      # Kaggle CLI читает переменную окружения KAGGLE_API_TOKEN напрямую.
+      KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN_OKV }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Kaggle CLI с поддержкой API-токенов (>= 1.8.0)
+        run: |
+          pip install -q --upgrade kaggle
+          kaggle --version
+          python - <<'EOF'
+          import re, subprocess
+          out = subprocess.check_output(["kaggle", "--version"], text=True).strip()
+          m = re.search(r"(\d+)\.(\d+)", out)
+          assert m and tuple(map(int, m.groups())) >= (1, 8), \
+              f"нужен kaggle CLI >= 1.8.0 для API-токенов, получен: {out}"
+          print("OK: kaggle CLI поддерживает API-токены")
+          EOF
+
+      - name: Download latest kernel output
+        run: |
+          mkdir -p ./output
+          kaggle kernels output eavprog/okv-classifier-downloader -p ./output
+          echo "Содержимое output:"
+          find ./output -maxdepth 4 -type f | head -30
+          echo ""
+          echo "--- Попытка показать лог/диагностику тетрадки (если есть) ---"
+          for f in ./output/*.log ./output/*.txt ./output/__notebook*.ipynb; do
+            [ -f "$f" ] && { echo ">>> $f (last 50 lines) >>>"; tail -n 50 "$f"; echo "<<< $f <<<"; echo ""; }
+          done || true
+
+      - name: Copy web files to repo root (авто-детект SRC, не падает, ставит флаг)
+        id: copy
+        run: |
+          # ВАЖНО ПРО ОКВ (грабли в обратную сторону от ОКЕИ v1.2):
+          # Текущая тетрадка ОКВ пишет публикуемые артефакты В /kaggle/working/web/
+          # (подтверждено зелёным прогоном: JSON path = /kaggle/working/web/okv.json),
+          # а НЕ в okv_data/web/, как ОКФС/ОКОПФ/ОКАТО/ОКТМО/ОКОГУ, и НЕ в корень
+          # /kaggle/working, как старый ОКЕИ. Поэтому голый ./output как SRC НЕ
+          # используется НИКОГДА (это ровно те 4x MISSING, на которых горел ОКЕИ).
+          #
+          # SRC авто-детектится по кандидатам, конвенционный первым:
+          #   1) ./output/okv_data/web  <- если применён опциональный патч CELL 1
+          #   2) ./output/web           <- текущее состояние тетрадки ОКВ
+          # Маркер правильного каталога - наличие okv.json. Если ни один кандидат
+          # не подошёл - FILES_OK=false, коммит пропускается, сайт остаётся на
+          # последней хорошей версии (та же защита, что в ОКФС/ОКОПФ).
+          SRC=""
+          for cand in ./output/okv_data/web ./output/web; do
+            if [ -f "$cand/okv.json" ]; then SRC="$cand"; break; fi
+          done
+
+          if [ -z "$SRC" ]; then
+            echo "::warning::не найден каталог с okv.json ни в ./output/okv_data/web, ни в ./output/web (тетрадка, вероятно, упала на critical или писала не туда)"
+            echo "--- дерево ./output для отладки пути ---"
+            find ./output -type f 2>/dev/null | head -60 || true
+            echo "FILES_OK=false" >> "$GITHUB_ENV"
+          else
+            echo "SRC=$SRC"
+            MISSING=0
+            for f in okv.json okv.json.gz okv_meta.json okv_meta.json.gz; do
+              if [ -f "$SRC/$f" ]; then
+                cp "$SRC/$f" "./$f"
+                echo "copied $f"
+              else
+                echo "::warning::MISSING $f в $SRC"
+                MISSING=$((MISSING+1))
+              fi
+            done
+            if [ "$MISSING" -gt 0 ]; then
+              echo "Отсутствует $MISSING из 4 файлов - коммит пропущен, сайт остаётся на последней хорошей версии"
+              echo "FILES_OK=false" >> "$GITHUB_ENV"
+            else
+              echo "Все 4 файла на месте"
+              echo "FILES_OK=true" >> "$GITHUB_ENV"
+              echo "--- okv_meta.json (редакция / warnings / critical) ---"
+              python -m json.tool okv_meta.json || cat okv_meta.json
+            fi
+          fi
+
+      - name: Commit and push changes
+        if: env.FILES_OK == 'true'
+        run: |
+          git config --local user.email "github-actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add okv.json okv.json.gz okv_meta.json okv_meta.json.gz
+          if git diff --cached --quiet; then
+            echo "Изменений нет - данные уже актуальны"
+          else
+            # У ОКВ нет поля source_date в смысле Росстата; читаем цепочкой фолбэков.
+            # Фактически для текущего снимка classifikators напечатается prepared_date
+            # (13.01.2026) - это и есть "дата, к которой актуален снимок источника".
+            SOURCE_DATE=$(python - <<'PYEOF'
+            import json, sys
+            try:
+                m = json.load(open('okv_meta.json', encoding='utf-8'))
+            except Exception:
+                print('?'); sys.exit(0)
+            for k in ('source_date', 'prepared_date', 'effective_date', 'generated_date'):
+                v = m.get(k)
+                if v:
+                    print(v); sys.exit(0)
+            print('?')
+            PYEOF
+            )
+            git commit -m "Auto-update: OKV data from kernel output (source $SOURCE_DATE) [skip ci]"
+            git push
+            echo "Изменения запушены"
+          fi
+
+      - name: Trigger new notebook run (fire-and-forget, всегда)
+        if: always()
+        run: |
+          mkdir -p ./nb
+          kaggle kernels pull eavprog/okv-classifier-downloader -p ./nb --metadata
+          kaggle kernels push -p ./nb
+          echo "Тетрадка перезапущена (round-trip); workflow не ждёт её завершения"
