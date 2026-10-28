@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ОКВ — Общероссийский классификатор валют</title>
-<meta name="description" content="Поиск по ОКВ: числовой код валюты (643, 840, 978), буквенный код ISO 4217 (RUB, USD, EUR) и наименование. Доллар, евро, рубль, юань, тенге, фунт стерлингов, СДР и другие валюты и международные расчётные единицы. Источник — Росстандарт и Банк России.">
+<meta name="description" content="Поиск по ОКВ: числовой код валюты (643, 840, 978), буквенный код ISO 4217 (RUB, USD, EUR) и наименование. Доллар, евро, рубль, юань, тенге, фунт стерлингов, СДР и другие валюты и международные расчётные единицы.">
 <meta name="theme-color" content="#3457a6">
 <link rel="icon" type="image/svg+xml" href="https://prog815.github.io/common-menu/favicon.svg?v=1.0.0">
 <style>
@@ -314,11 +314,11 @@
   ];
   var POPULAR_MONO = {"USD":1,"EUR":1,"RUB":1,"CNY":1};
 
+  // Только правильные источники для ОКВ
   var DEFAULT_PRIMARY_SOURCES = [
     { name: 'classifikators.ru — ОКВ', url: 'https://classifikators.ru/okv', role: 'primary' }
   ];
   var DEFAULT_SECONDARY_SOURCES = [
-    { name: 'Росстандарт (ОК 014-2000)', url: 'https://protect.gost.ru/classificators/details/abd21f4b-43bd-437e-b987-9b8c0de2c480', role: 'secondary' },
     { name: 'КонсультантПлюс', url: 'https://www.consultant.ru/document/cons_doc_LAW_31966/', role: 'secondary' },
     { name: 'Гарант', url: 'https://internet.garant.ru/#/document/12122754', role: 'secondary' },
     { name: 'Кодекс', url: 'https://docs.cntd.ru/document/842501138', role: 'secondary' }
@@ -536,9 +536,14 @@
             ".";
     elFootLead.innerHTML = escHtml(s).replace(/(\d[\d\u00a0.]*)/g,"<b>$1</b>");
 
+    // Фильтруем источники, чтобы строго соблюсти требование
     var primaryList = META && META.primary_sources ? META.primary_sources.filter(function(x){return x.role==='primary'}) : [];
     var secondaryList = META && META.primary_sources ? META.primary_sources.filter(function(x){return x.role==='secondary'}) : [];
     
+    // Жёстко вычищаем Росстандарт из метаданных (на случай, если старая мета)
+    primaryList = primaryList.filter(function(x){ return x.url.indexOf('gost.ru') < 0; });
+    secondaryList = secondaryList.filter(function(x){ return x.url.indexOf('gost.ru') < 0; });
+
     var mergedPrimary = mergeSources(primaryList, DEFAULT_PRIMARY_SOURCES);
     var mergedSecondary = mergeSources(secondaryList, DEFAULT_SECONDARY_SOURCES);
 
