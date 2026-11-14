@@ -1,232 +1,327 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ОКВ — Общероссийский классификатор валют</title>
-<meta name="description" content="Поиск по ОКВ: числовой код валюты (643, 840, 978), буквенный код ISO 4217 (RUB, USD, EUR) и наименование. Доллар, евро, рубль, юань, тенге, фунт стерлингов, СДР и другие валюты и международные расчётные единицы.">
-<meta name="theme-color" content="#3457a6">
-<link rel="icon" type="image/svg+xml" href="https://prog815.github.io/common-menu/favicon.svg?v=1.0.0">
-<style>
-  :root{
-    --bg:#eef1f7; --panel:#ffffff; --text:#16203a; --muted:#5b6478;
-    --line:#dbe1ec; --line-strong:#c6cfe0;
-    --accent:#3457a6; --accent-weak:#e6ecf8; --accent-text:#27407e;
-    --mark:#fff3a3; --danger:#b42318; --shadow:0 1px 2px rgba(20,30,60,.06),0 6px 18px rgba(20,30,60,.06);
-    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
-    --radius:12px;
+<title>ОКВ — Общероссийский классификатор валют | поиск по кодам</title>
+<meta name="description" content="Онлайн-справочник ОКВ (ОК 014-2000): мгновенный поиск кодов валют по числовому коду (643, 840, 008), буквенному коду ISO 4217 (RUB, USD) и наименованию.">
+<link rel="icon" type="image/svg+xml" href="https://prog815.github.io/favicon.svg?v=1.0.0">
+<meta name="theme-color" content="#eef1f7">
 
-    /* ОКВ-специфичные роли бейджей */
-    --alpha:#2f7d8c; --alpha-bg:#e2f1f3; --alpha-fg:#1d5f6b;
-    --intl:#7b5ea7;  --intl-bg:#efe9f7;  --intl-fg:#54407a;
-    --review:#b06a00;--review-bg:#fdf0da;--review-fg:#8a5200;
-    --cur:#3457a6;   --cur-bg:#e6ecf8;   --cur-fg:#27407e;
+<!-- JSON-LD микроразметка -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "Общероссийский классификатор валют (ОКВ)",
+  "description": "Справочный снимок открытых данных (ОК (МК (ИСО 4217) 003-97) 014-2000)",
+  "url": "https://prog815.github.io/okv/",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Экосистема «Классик»",
+    "url": "https://prog815.github.io/"
+  },
+  "author": {
+    "@type": "Person",
+    "sameAs": [
+      "https://m.vk.ru/alekseyenin",
+      "https://t.me/AlekseyEnin",
+      "https://max.ru/channel_prog815",
+      "https://www.linkedin.com/in/eavprog/"
+    ]
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
-  body{
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-    background:var(--bg); color:var(--text); line-height:1.45;
-    -webkit-text-size-adjust:100%;
-  }
-  a{color:var(--accent-text)}
-  .wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+}
+</script>
+
+<!-- Yandex.Metrika counter -->
+<script>
+  (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+  m[i].l=1*new Date();
+  for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+  k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+  (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+  ym(105817342, "init", {
+    clickmap: true,
+    trackLinks: true,
+    accurateTrackBounce: true
+  });
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/105817342" style="position:absolute; left:-9999px;" alt=""></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SM54ENZHYS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SM54ENZHYS');
+</script>
+<!-- /Google tag -->
+
+<!-- Общие ассеты хаба -->
+<script src="https://prog815.github.io/share.js?v=1.0.3" defer></script>
+
+<style>
   [hidden]{display:none!important}
 
-  /* header */
-  .hero{padding:18px 0 6px}
-  .hero h1{margin:0 0 4px;font-size:30px;letter-spacing:.2px}
-  .hero p{margin:0;color:var(--muted);font-size:15px;max-width:940px}
-  .hero p b{color:var(--text);font-weight:600}
+  :root{
+    --bg:#eef1f7; --panel:#ffffff; --ink:#16203a; --muted:#5b6478;
+    --line:#dbe1ec; --brand:#3457a6; --brand-d:#27407e; --accent:#e6ecf8;
+    --mark:#fff3a3; --shadow:0 1px 2px rgba(20,30,60,.06),0 6px 18px rgba(20,30,60,.06);
+    --radius:12px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    
+    /* Цвета бейджей ОКВ */
+    --alpha-bg:#e2f1f3; --alpha-fg:#1d5f6b;
+    --intl-bg:#efe9f7; --intl-fg:#54407a;
+    --review-bg:#fdf0da; --review-fg:#8a5200;
+    --od-bg:#f3e8ff;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#0b1120; --panel:#111a2c; --ink:#e6edf7; --muted:#94a3b8;
+      --line:#1e293b; --brand:#60a5fa; --brand-d:#3b82f6; --accent:rgba(96,165,250,.12);
+      --mark:#854d0e; --shadow:0 1px 2px rgba(0,0,0,.4);
+      --alpha-bg:rgba(47,125,140,.2); --alpha-fg:#7dd3fc;
+      --intl-bg:rgba(123,94,167,.2); --intl-fg:#c4b5fd;
+      --review-bg:rgba(176,106,0,.2); --review-fg:#fbbf24;
+      --od-bg:rgba(167,139,250,.1);
+    }
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    -webkit-text-size-adjust:100%;
+  }
+  a{color:var(--brand); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  .wrap{max-width:980px;margin:0 auto;padding:0 14px}
+  .skip-link{position:absolute;left:-9999px;top:0;background:var(--panel);padding:10px;z-index:100;}
+  .skip-link:focus{left:0;}
+
+  /* Баннер хаба */
+  .klassik-banner{display:block;max-width:1200px;margin:0 auto;padding:8px 16px;text-decoration:none;opacity:.9}
+  .klassik-banner:hover{opacity:1}
+  .klassik-banner img{display:block;width:100%;height:auto}
+
+  header.hero{padding:16px 0 6px}
+  h1{font-size:24px;margin:0 0 4px;letter-spacing:-.02em}
+  .sub{color:var(--muted);margin:0 0 12px;font-size:14px}
+
   .notice{
-    margin:12px 0 2px;padding:10px 14px;border:1px solid var(--line-strong);
-    border-left:5px solid var(--alpha);border-radius:10px;background:var(--panel);
-    color:var(--text);font-size:13.5px;box-shadow:var(--shadow);
+    margin:12px 0 2px;padding:10px 14px;border:1px solid var(--line);
+    border-left:5px solid var(--brand);border-radius:10px;background:var(--panel);
+    color:var(--ink);font-size:13.5px;box-shadow:var(--shadow);
   }
   .notice b{font-weight:600}
   .notice a{white-space:nowrap}
 
-  /* chips */
-  .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 4px}
-  .chips .lbl{color:var(--muted);font-size:13px;margin-right:2px}
-  .chip{
-    border:1px solid var(--line-strong);background:var(--panel);color:var(--accent-text);
-    border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;font:inherit;
-    transition:background .12s,border-color .12s,color .12s;
+  /* Панель поиска и фильтров */
+  .search-container{padding:12px 0 8px;}
+  .searchbar{display:flex; gap:8px; align-items:stretch; flex-wrap:wrap;}
+  .searchbar input[type=text]{
+    flex:2; min-width:200px; font-size:16px; padding:12px 16px;
+    border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--panel); color:var(--ink); outline:none;
+    transition:border-color .2s;
   }
-  .chip:hover{background:var(--accent-weak);border-color:var(--accent)}
-  .chip.mono{font-family:var(--mono);letter-spacing:.3px}
-
-  /* search panel */
-  .panel{
-    background:rgba(255,255,255,.92);
-    backdrop-filter:saturate(1.1) blur(6px);
-    border-bottom:1px solid var(--line);padding:12px 0;margin-top:0;
-  }
-  .panel .wrap{display:flex;flex-direction:column;gap:10px}
-  .row1{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .searchbox{position:relative;flex:1 1 340px;min-width:220px}
-  #q{
-    width:100%;padding:11px 38px 11px 13px;border:1px solid var(--line-strong);
-    border-radius:10px;font-size:15px;background:var(--panel);color:var(--text);
-  }
-  #q:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
-  #q::-webkit-search-cancel-button{display:none;-webkit-appearance:none}
-  .clear{
-    position:absolute;right:8px;top:50%;transform:translateY(-50%);
-    border:none;background:transparent;color:var(--muted);font-size:18px;line-height:1;
-    cursor:pointer;padding:4px 6px;border-radius:8px;display:none;
-  }
-  .clear:hover{background:var(--accent-weak);color:var(--accent-text)}
-  .searchbox.has-val .clear{display:block}
-  select#type{
-    padding:9px 12px;border:1px solid var(--line-strong);border-radius:10px;
-    background:var(--panel);font:inherit;font-size:14px;color:var(--text);cursor:pointer;
-  }
-  select#type:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
-
-  /* status line */
-  .statusline{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;
-    color:var(--muted);font-size:13px;padding:2px 2px 0}
-  .statusline .found b{color:var(--text)}
+  .searchbar input[type=text]:focus{border-color:var(--brand); box-shadow:0 0 0 3px var(--accent)}
   
-  .reset-link {
-    font-size: 13px;
-    color: var(--muted);
-    text-decoration: underline dashed;
-    text-underline-offset: 3px;
-    white-space: nowrap;
-    transition: color .15s;
+  .searchbar select {
+    flex:1; min-width:140px; font-size:14px; padding:12px;
+    border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--panel); color:var(--ink); outline:none; cursor:pointer;
   }
-  .reset-link:hover {
-    color: var(--accent-text);
+  .searchbar select:focus{border-color:var(--brand)}
+
+  .meta-line{
+    display:flex; justify-content:space-between; align-items:center;
+    margin:12px 2px 8px; font-size:13px; color:var(--muted);
   }
+  .meta-line .count b{color:var(--ink)}
+  .meta-line .clear-link{color:var(--muted); text-decoration:underline dashed; cursor:pointer}
+  .meta-line .clear-link:hover{color:var(--brand)}
 
-  /* results */
-  main{padding:14px 0 30px}
-  #state{padding:30px 4px;color:var(--muted);text-align:center}
-  #state.error{color:var(--danger)}
-  #state .retry{margin-top:10px;display:inline-block;padding:9px 14px;border:1px solid var(--line-strong);
-    border-radius:10px;background:var(--panel);color:var(--accent-text);cursor:pointer;font:inherit}
-  #list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
-  .empty{padding:26px 4px;color:var(--muted);text-align:center}
+  /* ---------- Загрузка ---------- */
+  #status{
+    padding:48px 4px;
+    text-align:center;
+    color:var(--muted);
+    animation:fade-in .25s ease-out;
+  }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  #status .spinner{
+    width:46px; height:46px; border-radius:50%;
+    border:3px solid var(--line);
+    border-top-color:var(--brand);
+    margin:0 auto 16px;
+    animation:spin .85s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #status .loading-text{
+    font-size:15px; font-weight:500; color:var(--ink);
+    margin-bottom:6px;
+  }
+  #status .loading-text .dots span{
+    display:inline-block; opacity:0;
+    animation:dot-pulse 1.4s infinite;
+  }
+  #status .loading-text .dots span:nth-child(2){ animation-delay:.2s; }
+  #status .loading-text .dots span:nth-child(3){ animation-delay:.4s; }
+  @keyframes dot-pulse {
+    0%, 60%, 100% { opacity: 0; }
+    30% { opacity: 1; }
+  }
+  #status .substatus{
+    font-size:12px; color:var(--muted);
+    margin-top:4px;
+  }
+  #status .err{color:#e11d48; font-weight:500;}
 
-  /* card */
+  #results{display:flex; flex-direction:column; gap:12px; padding-bottom:8px}
+
   .card{
-    background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--kind,var(--cur));
-    border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--radius); padding:16px;
+    box-shadow:var(--shadow); position:relative;
+    transition:border-color .2s;
+    border-left: 5px solid var(--brand);
   }
-  .card.highlight{
-    outline:3px solid var(--accent);
-    outline-offset:2px;
-  }
-  .card-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .code{
-    font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:.3px;
-    background:var(--kind-bg,var(--cur-bg));color:var(--kind-fg,var(--cur-fg));
-    border:1px solid transparent;border-radius:8px;padding:4px 9px;cursor:pointer;white-space:nowrap;
-  }
-  .code:hover{border-color:var(--kind,var(--cur))}
-  .alpha{
-    font-family:var(--mono);font-weight:700;font-size:14px;letter-spacing:.5px;
-    background:var(--alpha-bg);color:var(--alpha-fg);
-    border:1px solid transparent;border-radius:8px;padding:4px 9px;cursor:pointer;white-space:nowrap;
-  }
-  .alpha:hover{border-color:var(--alpha)}
-  
-  .card-actions{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto;align-items:center}
-  .btn-small{
-    display:inline-flex;align-items:center;gap:4px;
-    border:1px dashed var(--line-strong);background:#fbfcfe;color:var(--muted);
-    border-radius:8px;padding:4px 9px;cursor:pointer;font:inherit;font-size:13px;white-space:nowrap;
-    transition: background .15s, border-color .15s;
-  }
-  .btn-small:hover{border-color:var(--accent);color:var(--accent-text);background:var(--accent-weak)}
+  .card:hover{border-color:var(--brand)}
+  .card.highlight{border-color:var(--brand); box-shadow:0 0 0 2px var(--accent), var(--shadow)}
 
-  .badge{
-    font:inherit;font-size:12px;border-radius:999px;padding:4px 10px;cursor:pointer;
-    border:1px solid transparent;white-space:nowrap;
+  .row1{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; align-items:flex-start; margin-bottom:12px}
+
+  .code-btn {
+    appearance:none; border:1px solid var(--line); background:var(--accent);
+    color:var(--brand-d); font-family:var(--mono); font-weight:700; font-size:1.05rem;
+    padding:6px 12px; border-radius:8px; cursor:pointer; white-space:nowrap;
+    transition: background .15s;
   }
-  .badge-intl{background:var(--intl-bg);color:var(--intl-fg);border-color:var(--intl)}
-  .badge-intl:hover{filter:brightness(.97)}
-  .badge-review{background:var(--review-bg);color:var(--review-fg);border-color:var(--review);cursor:default}
+  .code-btn:hover { background:#dbeafe; border-color:var(--brand); }
   
-  .name{margin-top:9px;font-size:15.5px;font-weight:600}
+  .code-btn.norm {
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    background: var(--alpha-bg);
+    color: var(--alpha-fg);
+  }
+  .code-btn.norm:hover { filter:brightness(.95); border-color: var(--alpha-fg); }
+
+  /* Бейджи */
+  .badges { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; align-items:center; }
+  .badge { display:inline-flex; align-items:center; padding:4px 8px; border-radius:999px; font-size:0.75rem; font-weight:600; border:1px solid transparent; white-space:nowrap; }
+  
+  .badge.intl { background: var(--intl-bg); color: var(--intl-fg); cursor:pointer; transition: filter .15s; }
+  .badge.intl:hover { filter:brightness(0.95); }
+  .badge.review { background: var(--review-bg); color: var(--review-fg); cursor:default; }
+
+  .name{
+    font-size:18px; font-weight:600; line-height:1.4; margin-bottom:8px; color:var(--ink);
+  }
+  
   .meta-row{margin-top:7px;font-size:13.5px;display:flex;flex-wrap:wrap;gap:6px;align-items:baseline}
   .meta-row .lbl{color:var(--muted);white-space:nowrap}
-  .meta-row .val{color:var(--text)}
-  .notes-row{margin-top:7px;font-size:13.5px;color:var(--text);
-    background:var(--accent-weak);border-radius:8px;padding:6px 9px}
-  .notes-row .lbl{color:var(--accent-text);font-weight:600}
-  .hint-row{margin-top:7px;font-size:12.5px;border-radius:8px;padding:6px 9px}
-  .hint-intl{background:var(--intl-bg);color:var(--intl-fg)}
-  .hint-review{background:var(--review-bg);color:var(--review-fg)}
-  mark{background:var(--mark);border-radius:3px;padding:0 1px;color:inherit}
+  .meta-row .val{color:var(--ink)}
+  .notes-row{margin-top:7px;font-size:13.5px;color:var(--ink);
+    background:var(--accent);border-radius:8px;padding:6px 9px}
+  .notes-row .lbl{color:var(--brand-d);font-weight:600}
 
-  .more{display:flex;justify-content:center;margin:16px 0 4px}
-  .more button{
-    padding:11px 18px;border:1px solid var(--line-strong);border-radius:10px;background:var(--panel);
-    color:var(--accent-text);font:inherit;font-size:14px;cursor:pointer;box-shadow:var(--shadow);
+  mark { background:var(--mark); color:inherit; border-radius:2px; padding:0 1px; }
+
+  .actions{
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+    padding-top:12px; border-top:1px dashed var(--line);
+    margin-top:12px;
   }
-  .more button:hover{border-color:var(--accent);background:var(--accent-weak)}
-  .more button:disabled{opacity:.5;cursor:default}
-
-  /* footer */
-  footer{border-top:1px solid var(--line);background:var(--panel)}
-  footer .wrap{padding:18px 16px 30px;color:var(--muted);font-size:14px}
-  footer h4{margin:0 0 8px;color:var(--text);font-size:15px}
-  footer .lead{margin:0 0 4px;color:var(--text)}
-  footer .lead b{font-weight:600}
-  .date-line{color:var(--muted);font-size:13px;margin:0 0 12px}
-  .sources{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
-  .sources-row{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center}
-  .sources-row .cap{color:var(--muted)}
-  .sources-row a{white-space:nowrap;text-decoration:none;border-bottom:1px solid transparent}
-  .sources-row a:hover{border-bottom-color:var(--accent)}
-  footer .disc{margin:0;font-size:13px;color:#6b7385}
-
-  /* floating buttons + toast */
-  .fab{position:fixed;right:16px;display:flex;flex-direction:column;gap:8px;z-index:40}
-  .fab.up{bottom:74px}.fab.down{bottom:16px}
-  .fab button{
-    width:42px;height:42px;border-radius:50%;border:1px solid var(--line-strong);background:var(--panel);
-    color:var(--accent-text);font-size:18px;cursor:pointer;box-shadow:var(--shadow);display:none;
+  .action-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:12px; font-weight:500; color:var(--muted);
+    background:transparent; border:1px solid transparent;
+    border-radius:6px; padding:4px 8px; cursor:pointer;
+    transition:all .2s; font-family:inherit;
   }
-  .fab button:hover{background:var(--accent-weak);border-color:var(--accent)}
+  .action-btn:hover{background:var(--accent); color:var(--brand-d); border-color:var(--accent)}
+
+  .share-slot{display:inline-flex}
+  .share-slot klassik-share { display: inline-flex; align-items: center; }
+
+  .more{
+    display:block; width:100%; margin:16px 0; padding:14px;
+    font-size:14px; font-weight:600; border:1px solid var(--line);
+    border-radius:var(--radius); background:var(--panel);
+    color:var(--brand); cursor:pointer;
+  }
+  .more:hover{border-color:var(--brand); background:var(--accent)}
+  .more[hidden]{display:none!important}
+
+  /* Футер 4-рядный */
+  footer{margin:40px 0; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:13px}
+  footer .stats{margin:0 0 4px; font-weight:500; color:var(--ink)}
+  footer .date-line{margin:0 0 16px; font-size:12px}
+  footer .links{display:flex; flex-direction:column; gap:12px}
+  footer .row-label{font-size:12px; color:var(--muted); margin-bottom:2px}
+  footer a{color:var(--brand)}
+
+  footer .disc{
+    font-size:12px; margin-top:16px; line-height:1.5;
+    background:var(--od-bg); border:1px solid rgba(124,58,237,.2);
+    border-radius:10px; padding:12px 14px; color:var(--ink);
+  }
+
+  .fab{
+    position:fixed; right:20px; width:44px; height:44px; border-radius:50%;
+    border:1px solid var(--line); background:var(--panel); color:var(--brand-d);
+    font-size:20px; cursor:pointer; box-shadow:var(--shadow);
+    display:none; align-items:center; justify-content:center; z-index:40;
+  }
+  .fab.up{bottom:80px} .fab.down{bottom:24px} .fab.show{display:flex}
+
   .toast{
-    position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
-    background:#16203a;color:#eaf0ff;padding:10px 16px;border-radius:10px;font-size:14px;
-    box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:60;
-    max-width:90vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:99px;
+    font-size:13px; font-weight:500; opacity:0; pointer-events:none;
+    transition:opacity .2s, transform .2s; z-index:60; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:90vw;
   }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
 
-  @media (max-width:720px){
-    .hero h1{font-size:25px}
-    .row1{flex-direction:column;align-items:stretch}
-    .row1>*{width:100%}
-    .searchbox{flex:auto}
-    select#type{justify-content:space-between}
-    .statusline{flex-direction:column;gap:2px;align-items:flex-start}
-    .reset-link{margin-top:4px}
+  .noscript-msg {
+    background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #ffeeba;
+  }
+
+  @media(max-width:640px){
+    .klassik-banner{padding:4px 8px}
+    .wrap{padding:0 12px}
+    .name{font-size:16px}
+    .searchbar input[type=text], .searchbar select { width: 100%; flex: 1 1 100%; }
+    .row1 { flex-direction: column; }
+    .badges { justify-content: flex-start; margin-top: 8px; }
     .card-top{flex-direction:column;align-items:stretch}
     .card-actions{margin-left:0;justify-content:flex-start}
-    .btn-small{justify-content:center}
   }
 </style>
 </head>
 <body>
-<script src="https://prog815.github.io/common-menu/menu.js?v=3.0.0"></script>
-<common-projects-menu></common-projects-menu>
 
-<script src="https://prog815.github.io/common-menu/share.js?v=1.0.0"></script>
+<a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
-<div class="wrap hero">
-  <h1>ОКВ</h1>
-  <p>Общероссийский классификатор валют.
-     Поиск по <b>числовому коду</b> (643, 840, 978), <b>буквенному коду ISO 4217</b> (RUB, USD, EUR)
-     и <b>наименованию</b>: доллар, евро, рубль, юань, тенге, фунт стерлингов, СДР и другие валюты
-     и международные расчётные единицы. Справочник плоский — список записей без дерева.</p>
+<!-- Ссылка на центральный хаб -->
+<a class="klassik-banner" href="https://prog815.github.io/" title="На главную — все справочники">
+  <img src="https://prog815.github.io/banner.svg?v=1.0.0" alt="Экосистема «Классик» — все справочники">
+</a>
+
+<div class="wrap" id="main-content">
+  <header class="hero">
+    <h1>💱 ОКВ — Общероссийский классификатор валют</h1>
+    <p class="sub">Мгновенный поиск по числовому коду (643, 840, 008), буквенному коду ISO 4217 (RUB, USD) и наименованию. Плоский справочник (ОК (МК (ИСО 4217) 003-97) 014-2000).</p>
+  </header>
 
   <div class="notice">
     <b>ОКВ — это код валюты или международной расчётной единицы.</b>
@@ -234,809 +329,808 @@
     на сайте <a href="https://www.cbr.ru/" rel="noopener" target="_blank">Банка России</a>.
   </div>
 
-  <div class="chips" id="chips" aria-label="Популярные запросы">
-    <span class="lbl">Популярные:</span>
-  </div>
-</div>
+  <noscript>
+    <div class="noscript-msg">
+      Для работы поиска и отображения карточек необходим JavaScript.
+      Вы можете ознакомиться с официальным первоисточником по ссылке в футере сайта.
+    </div>
+  </noscript>
 
-<div class="panel" id="panel">
-  <div class="wrap">
-    <div class="row1">
-      <div class="searchbox" id="searchbox">
-        <input id="q" type="text" autocomplete="off" spellcheck="false"
-               placeholder="Код (643, 840), буква (USD, RUB) или слово: доллар, евро, юань, СДР…"
-               aria-label="Поиск по ОКВ">
-        <button class="clear" id="clear" type="button" title="Очистить запрос" aria-label="Очистить запрос">✕</button>
+  <div class="search-container">
+    <div class="searchbar">
+      <input id="q" type="text" autocomplete="off" spellcheck="false" 
+             placeholder="Код (643, 840, 008), буква (USD, RUB) или слово: доллар, евро, СДР…" 
+             title="Поиск по числовому коду, буквенному коду или названию">
+      
+      <select id="type-filter" title="Фильтр по типу записи">
+        <option value="">Все записи</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="meta-line">
+    <div class="count" id="count">Загрузка...</div>
+    <div class="clear-link" id="clear-all" style="display:none" title="Сбросить поиск и фильтры">Очистить поиск</div>
+  </div>
+
+  <!-- Загрузка: спиннер + анимация -->
+  <div id="status">
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="loading-text">
+      <span id="loading-text">Загрузка справочника ОКВ</span><span class="dots"><span>.</span><span>.</span><span>.</span></span>
+    </div>
+    <div class="substatus">Файл ~6 КБ. Обычно 1–2 секунды.</div>
+  </div>
+
+  <div id="results"></div>
+
+  <button class="more" id="more" hidden>Показать ещё</button>
+
+  <!-- Футер 4-рядный -->
+  <footer>
+    <p class="stats" id="footstats">Загрузка статистики...</p>
+    <p class="date-line" id="footdate">Дата актуальности: не определена</p>
+
+    <div class="links">
+      <div id="foot-primary">
+        <div class="row-label">Источник данных (машиночитаемый снимок):</div>
       </div>
-      <select id="type" aria-label="Фильтр по типу записи"></select>
+      <div id="foot-secondary">
+        <div class="row-label">Первоисточники и текстовые редакции для сверки:</div>
+      </div>
+      <div>
+        <div class="row-label">Экосистема проектов:</div>
+        <a href="https://prog815.github.io/" target="_blank" rel="noopener">Центральный хаб «Классик»</a>
+      </div>
+      <div>
+        <div class="row-label">Обсуждение проекта и обратная связь:</div>
+        <a href="https://m.vk.ru/alekseyenin" target="_blank" rel="me noopener">ВКонтакте</a> ·
+        <a href="https://t.me/AlekseyEnin" target="_blank" rel="me noopener">Telegram</a> ·
+        <a href="https://max.ru/channel_prog815" target="_blank" rel="me noopener">MAX</a> ·
+        <a href="https://www.linkedin.com/in/eavprog/" target="_blank" rel="me noopener">LinkedIn</a>
+      </div>
     </div>
-    <div class="statusline">
-      <div class="found" id="found">Загрузка…</div>
-      <a href="#" id="resetFilters" class="reset-link" title="Очистить все фильтры">Очистить</a>
-    </div>
-  </div>
+
+    <p class="disc" id="footdisc">
+      Справочник носит справочный характер и не является точной копией официального документа.
+      Машиночитаемый снимок подготовлен на основе okv.xlsx сайта classifikators.ru (вторичный агрегатор).
+      Перед применением в документах, имеющих юридическую силу, сверяйтесь с действующей редакцией Общероссийского классификатора валют.
+      Записи с пометкой «сверить» имеют буквенный код, восстановленный транслитерацией из кириллического артефакта источника.
+      Международные расчётные единицы (СДР и другие) не являются валютами отдельных государств.
+    </p>
+  </footer>
 </div>
 
-<main class="wrap">
-  <div id="listView">
-    <div id="state">Загрузка данных справочника…</div>
-    <ul id="list" hidden></ul>
-    <div class="more" id="moreWrap" hidden>
-      <button id="more" type="button">Показать ещё</button>
-    </div>
-  </div>
-</main>
-
-<footer>
-  <div class="wrap">
-    <h4>О справочнике</h4>
-    <p class="lead" id="footLead"></p>
-    <div class="date-line" id="dateLine"></div>
-    <div class="sources">
-      <div class="sources-row" id="sourcesPrimary"></div>
-      <div class="sources-row" id="sourcesSecondary"></div>
-    </div>
-    <p class="disc" id="footDisc"></p>
-  </div>
-</footer>
-
-<div class="fab up"><button id="toTop" type="button" title="Наверх" aria-label="Наверх">↑</button></div>
-<div class="fab down"><button id="toBottom" type="button" title="Вниз" aria-label="Вниз">↓</button></div>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<button class="fab up" id="fabUp" title="Прокрутить страницу наверх">↑</button>
+<button class="fab down" id="fabDown" title="Прокрутить страницу вниз">↓</button>
+<div class="toast" id="toast">Скопировано</div>
 
 <script>
 (function(){
   "use strict";
 
-  // ---------- конфигурация ----------
-  var BASE = location.href.replace(/[^/]*$/,"");
-  var DATA_GZ  = BASE + "okv.json.gz";
-  var DATA_JSON= BASE + "okv.json";
-  var META_GZ  = BASE + "okv_meta.json.gz";
-  var META_JSON= BASE + "okv_meta.json";
-
-  var PAGE_SIZE = 20;
-  var DEBOUNCE_MS = 180;
-  var SCROLL_THRESHOLD = 300;
-  var EMPTY_PQ = {digits:"", alpha:"", tokens:[], rawTerms:[], full:""};
-
-  // формат веб-записи ОКВ:
-  // [code, iso_alpha, name_ru, country, notes, aliases, needs_review, is_intl]
-  var F_CODE=0, F_ALPHA=1, F_NAME=2, F_COUNTRY=3, F_NOTES=4, F_ALIASES=5, F_REVIEW=6, F_INTL=7;
-
-  var TYPE_ALL="";
-  var TYPE_CURRENCY="currency";
-  var TYPE_UNIT="unit";
-
-  var POPULAR = [
-    "доллар","евро","рубль","юань","тенге","фунт стерлингов","иена","СДР",
-    "USD","EUR","RUB","CNY"
-  ];
-  var POPULAR_MONO = {"USD":1,"EUR":1,"RUB":1,"CNY":1};
-
-  // Только правильные источники для ОКВ
-  var DEFAULT_PRIMARY_SOURCES = [
-    { name: 'classifikators.ru — ОКВ', url: 'https://classifikators.ru/okv', role: 'primary' }
-  ];
-  var DEFAULT_SECONDARY_SOURCES = [
-    { name: 'КонсультантПлюс', url: 'https://www.consultant.ru/document/cons_doc_LAW_31966/', role: 'secondary' },
-    { name: 'Гарант', url: 'https://internet.garant.ru/#/document/12122754', role: 'secondary' },
-    { name: 'Кодекс', url: 'https://docs.cntd.ru/document/842501138', role: 'secondary' }
-  ];
-
-  // ---------- состояние ----------
-  var RECORDS = [];
+  var PAGE = 20;
+  var DATA = [];
   var BY_CODE = {};
-  var countCurrency=0, countUnit=0, countReview=0, countNotes=0;
-  var filtered = [];
-  var shown = PAGE_SIZE;
   var META = null;
   var activeDeepLinkCode = null;
+  var view = { list: [], shown: 0 };
+  var loadingInterval = null;
 
-  // ---------- dom ----------
-  var $ = function(id){return document.getElementById(id);};
-  var elState=$("state"), elList=$("list"), elMoreWrap=$("moreWrap"), elMore=$("more");
-  var elQ=$("q"), elClear=$("clear"), elBox=$("searchbox"), elType=$("type"),
-      elFound=$("found"), elDate=$("dateLine"),
-      elChips=$("chips"), elFootLead=$("footLead"), elFootDisc=$("footDisc"), elToast=$("toast"),
-      elTop=$("toTop"), elBottom=$("toBottom"), elListView=$("listView"),
-      elSourcesPrimary=$("sourcesPrimary"), elSourcesSecondary=$("sourcesSecondary");
+  var TYPE_ALL = "";
+  var TYPE_CURRENCY = "currency";
+  var TYPE_UNIT = "unit";
 
-  // ---------- утилиты ----------
-  function norm(s){
-    s = String(s==null?"":s).toLowerCase().replace(/ё/g,"е");
-    s = s.replace(/[^\p{L}\p{N}]+/gu," ");
-    s = s.replace(/\s+/g," ").trim();
-    return s;
+  var DEFAULT_PRIMARY_SOURCES = [
+    { name: "classifikators.ru — ОКВ", url: "https://classifikators.ru/okv", role: "primary" }
+  ];
+  var DEFAULT_SECONDARY_SOURCES = [
+    { name: "Росстандарт (protect.gost.ru)", url: "https://protect.gost.ru/classificators/details/abd21f4b-43bd-437e-b987-9b8c0de2c480", role: "secondary" },
+    { name: "КонсультантПлюс", url: "https://www.consultant.ru/document/cons_doc_LAW_31966/", role: "secondary" },
+    { name: "Гарант", url: "https://internet.garant.ru/#/document/12122754", role: "secondary" },
+    { name: "Кодекс", url: "https://docs.cntd.ru/document/842501138", role: "secondary" }
+  ];
+
+  var els = {
+    q: document.getElementById('q'),
+    typeFilter: document.getElementById('type-filter'),
+    clearAll: document.getElementById('clear-all'),
+    count: document.getElementById('count'),
+    status: document.getElementById('status'),
+    loadingText: document.getElementById('loading-text'),
+    results: document.getElementById('results'),
+    more: document.getElementById('more'),
+    footstats: document.getElementById('footstats'),
+    footdate: document.getElementById('footdate'),
+    footPrimary: document.getElementById('foot-primary'),
+    footSecondary: document.getElementById('foot-secondary'),
+    footdisc: document.getElementById('footdisc'),
+    fabUp: document.getElementById('fabUp'),
+    fabDown: document.getElementById('fabDown'),
+    toast: document.getElementById('toast')
+  };
+
+  var LOADING_PHASES = [
+    'Загрузка справочника ОКВ',
+    'Распаковка 6 КБ данных',
+    'Подготовка списка валют'
+  ];
+  var loadingIdx = 0;
+
+  function startLoadingTicker() {
+    stopLoadingTicker();
+    loadingInterval = setInterval(function(){
+      if (!els.loadingText || !els.loadingText.isConnected) { stopLoadingTicker(); return; }
+      loadingIdx = (loadingIdx + 1) % LOADING_PHASES.length;
+      els.loadingText.textContent = LOADING_PHASES[loadingIdx];
+    }, 1500);
   }
-  function normAlpha(s){
-    return String(s==null?"":s).toUpperCase().replace(/[^A-Z0-9]/g,"");
+  function stopLoadingTicker() {
+    if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null; }
   }
-  function escHtml(s){
-    return String(s==null?"":s).replace(/[&<>"']/g,function(c){
-      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
     });
   }
-  function escRe(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }
-  function fmtNum(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u00a0"); }
-  function plural(n,forms){
+  function escRe(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function normName(s){ return String(s == null ? '' : s).toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim(); }
+  function normAlpha(s){ return String(s == null ? '' : s).toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+  function fmt(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0'); }
+  function plural(n, forms){
     var n10=n%10, n100=n%100;
     if(n10===1 && n100!==11) return forms[0];
     if(n10>=2 && n10<=4 && (n100<10||n100>=20)) return forms[1];
     return forms[2];
   }
-  function isUnit(r){ return r.isIntl==="1"; }
-  function isReview(r){ return r.review==="1"; }
   function fmtRuDate(iso){
     var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso||""));
     if(!m) return iso||"";
     return m[3]+"."+m[2]+"."+m[1];
   }
 
-  // ---------- загрузка ----------
-  async function fetchJson(gzUrl, jsonUrl){
-    try{
-      if (typeof DecompressionStream === "function"){
-        var r = await fetch(gzUrl,{cache:"no-store"});
-        if (r.ok){
-          var ds = new DecompressionStream("gzip");
-          var decompressed = r.body.pipeThrough(ds);
-          var text = await new Response(decompressed).text();
-          return JSON.parse(text);
-        }
-      }
-    }catch(e){ /* fallback */ }
-    var r2 = await fetch(jsonUrl,{cache:"no-store"});
-    if(!r2.ok) throw new Error("не удалось получить файл, код ответа "+r2.status);
-    return await r2.json();
-  }
-
-  async function loadAll(){
-    elState.hidden=false; elState.className=""; elState.textContent="Загрузка данных справочника…";
-    elList.hidden=true; elList.innerHTML=""; elMoreWrap.hidden=true; elMore.textContent="";
-    elFound.textContent="Загрузка…"; elDate.textContent="";
-
-    var data, meta=null;
-    try{
-      data = await fetchJson(DATA_GZ, DATA_JSON);
-    }catch(err){
-      elState.className="error";
-      elState.innerHTML = "Не удалось загрузить данные справочника.<br>"+
-        "<small>"+escHtml(err&&err.message||err)+"</small><br>"+
-        '<button class="retry" id="retryBtn" type="button">Повторить</button>';
-      var rb=$("retryBtn"); if(rb) rb.addEventListener("click", loadAll);
-      return;
+  function highlight(text, tokens) {
+    if (!tokens || !tokens.length || !text) return esc(text);
+    var html = esc(text);
+    var sortedTokens = tokens.slice().sort(function(a,b){ return b.length - a.length; });
+    for (var i=0; i<sortedTokens.length; i++) {
+      var t = sortedTokens[i];
+      if (!t) continue;
+      var re = new RegExp('(' + escRe(t) + ')', 'gi');
+      html = html.replace(re, '<mark>$1</mark>');
     }
-    try{ meta = await fetchJson(META_GZ, META_JSON); }catch(e){ meta=null; }
-
-    META = meta;
-    buildIndexes(data);
-    buildTypeSelect();
-    renderChips();
-    renderFooter();
-    renderDateLine();
-    parseUrlAndApply();
+    return html;
   }
 
-  // ---------- построение индексов ----------
-  function buildIndexes(arr){
-    RECORDS = []; BY_CODE = {};
-    countCurrency=0; countUnit=0; countReview=0; countNotes=0;
-    if(!Array.isArray(arr)) arr=[];
+  async function loadJsonGz(url){
+    var r = await fetch(url, { cache: 'no-store' });
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    if(typeof DecompressionStream === 'undefined') throw new Error('DecompressionStream не поддерживается браузером');
+    var decompressed = r.body.pipeThrough(new DecompressionStream('gzip'));
+    var text = await new Response(decompressed).text();
+    return JSON.parse(text);
+  }
 
-    for(var i=0;i<arr.length;i++){
-      var it = arr[i]||[];
-      var code = String(it[F_CODE]==null?"":it[F_CODE]).trim();
-      if(!code) continue;
+  function syncCodeToUrl(code) {
+    var url = new URL(window.location);
+    if (code) url.searchParams.set('code', code);
+    else url.searchParams.delete('code');
+    history.replaceState(null, '', url.toString());
+  }
 
-      var alpha  = String(it[F_ALPHA]==null?"":it[F_ALPHA]).trim();
-      var name   = String(it[F_NAME]==null?"":it[F_NAME]).trim();
-      var country= String(it[F_COUNTRY]==null?"":it[F_COUNTRY]).trim();
-      var notes  = String(it[F_NOTES]==null?"":it[F_NOTES]).trim();
-      var aliases= String(it[F_ALIASES]==null?"":it[F_ALIASES]).trim();
-      var review = String(it[F_REVIEW]==null?"":it[F_REVIEW]).trim();
-      var intl   = String(it[F_INTL]==null?"":it[F_INTL]).trim();
+  function clearCodeFromUrl() { syncCodeToUrl(null); }
 
-      var nName = norm(name);
-      var nCountry = norm(country);
-      var nAliases = norm(aliases.replace(/[|]/g," "));
-      var nNotes = norm(notes);
-      var aAlpha = normAlpha(alpha);
+  function updateClearVisibility() {
+    var hasQuery = String(els.q.value || '').length > 0;
+    var hasCode = !!activeDeepLinkCode;
+    var hasType = els.typeFilter.value !== '';
+    els.clearAll.style.display = (hasQuery || hasCode || hasType) ? 'block' : 'none';
+  }
 
-      var rec = {
-        code:code, alpha:alpha, name:name, country:country, notes:notes,
-        aliases:aliases, review:review, isIntl:intl,
-        nName:nName, nCountry:nCountry, nAliases:nAliases, nNotes:nNotes, aAlpha:aAlpha,
-        blob: norm(code+" "+alpha+" "+name+" "+country+" "+aliases.replace(/[|]/g," ")+" "+notes)
-      };
+  function populateTypes() {
+    var countCurrency = 0, countUnit = 0;
+    DATA.forEach(function(r){
+      if (r.isIntl === '1') countUnit++;
+      else countCurrency++;
+    });
 
-      RECORDS.push(rec);
-      BY_CODE[code] = rec;
-
-      if(intl==="1") countUnit++; else countCurrency++;
-      if(review==="1") countReview++;
-      if(notes) countNotes++;
+    var currentVal = els.typeFilter.value;
+    while (els.typeFilter.options.length > 1) {
+      els.typeFilter.remove(1);
     }
 
-    RECORDS.sort(function(a,b){ return a.code < b.code ? -1 : a.code > b.code ? 1 : 0; });
-  }
-
-  // ---------- фильтр по типу ----------
-  function buildTypeSelect(){
     var opts = [
-      {v:TYPE_ALL,     label:"Все записи",                 n:RECORDS.length},
-      {v:TYPE_CURRENCY,label:"Валюты стран",               n:countCurrency},
-      {v:TYPE_UNIT,    label:"Международные расчётные единицы", n:countUnit}
+      {v: TYPE_CURRENCY, label: "Валюты стран", n: countCurrency},
+      {v: TYPE_UNIT, label: "Международные расчётные единицы", n: countUnit}
     ];
-    var html="";
     opts.forEach(function(o){
-      html += '<option value="'+escHtml(o.v)+'">'+escHtml(o.label+" ("+o.n+")")+'</option>';
+      var opt = document.createElement('option');
+      opt.value = o.v;
+      opt.textContent = o.label + " (" + o.n + ")";
+      els.typeFilter.appendChild(opt);
     });
-    elType.innerHTML = html;
+    if (currentVal) els.typeFilter.value = currentVal;
   }
 
-  function renderChips(){
-    var frag = document.createDocumentFragment();
-    POPULAR.forEach(function(p){
-      var b=document.createElement("button");
-      b.type="button"; b.className="chip"+(POPULAR_MONO[p]?" mono":""); b.textContent=p;
-      b.title="Искать: "+p;
-      b.addEventListener("click",function(){
-        activeDeepLinkCode = null;
-        clearCodeFromUrl();
-        elQ.value=p; syncClear(); applyFilters(); syncUrl(); focusTop();
+  async function boot(){
+    try{
+      startLoadingTicker();
+
+      var base = location.pathname.replace(/index\.html$/, '');
+      if(base.charAt(base.length - 1) !== '/') base += '/';
+
+      var raw = await loadJsonGz(base + 'okv.json.gz');
+      META = await loadJsonGz(base + 'okv_meta.json.gz');
+
+      if(!Array.isArray(raw)) throw new Error('bad data shape');
+
+      // [code, alpha, name, country, notes, aliases, review, isIntl]
+      DATA = raw.map(function(it, idx) {
+        var code = String(it[0] || '');
+        var alpha = String(it[1] || '');
+        var name = String(it[2] || '');
+        var country = String(it[3] || '');
+        var notes = String(it[4] || '');
+        var aliases = String(it[5] || '');
+        var review = String(it[6] || '');
+        var isIntl = String(it[7] || '');
+
+        var nName = normName(name);
+        var nCountry = normName(country);
+        var nAliases = normName(aliases.replace(/[|]/g, " "));
+        var nNotes = normName(notes);
+        var aAlpha = normAlpha(alpha);
+
+        var blob = normName(code + " " + alpha + " " + name + " " + country + " " + aliases.replace(/[|]/g, " ") + " " + notes);
+
+        var rec = {
+          code: code, alpha: alpha, name: name, country: country, notes: notes,
+          aliases: aliases, review: review, isIntl: isIntl,
+          nName: nName, nCountry: nCountry, nAliases: nAliases, nNotes: nNotes, aAlpha: aAlpha,
+          blob: blob, sourceOrder: idx
+        };
+        BY_CODE[code] = rec;
+        return rec;
       });
-      frag.appendChild(b);
-    });
-    elChips.appendChild(frag);
-  }
 
-  function renderDateLine(){
-    var parts=[];
-    if(META){
-      if(META.change_display) parts.push(META.change_display);
-      else if(META.source_date_display) parts.push("Снимок от "+META.source_date_display);
-      
-      if(META.effective_date) parts.push("введено "+fmtRuDate(META.effective_date));
-      if(META.prepared_date) parts.push("снимок источника "+META.prepared_date);
-    } else {
-      parts.push("Дата актуальности не определена");
-    }
-    elDate.textContent = parts.join(" · ");
-  }
+      populateTypes();
+      renderFooter();
 
-  function mergeSources(metaSources, defaults) {
-    var byUrl = new Map(defaults.map(function(s){ return [s.url, s]; }));
-    if (Array.isArray(metaSources)) {
-      for (var s of metaSources) {
-        if (s && s.url && !byUrl.has(s.url)) {
-          byUrl.set(s.url, s);
+      stopLoadingTicker();
+      els.status.style.display = 'none';
+
+      var urlParams = new URLSearchParams(window.location.search);
+      var codeParam = urlParams.get('code');
+      var typeParam = urlParams.get('type');
+
+      if (typeParam === TYPE_CURRENCY || typeParam === TYPE_UNIT) els.typeFilter.value = typeParam;
+
+      if (codeParam) {
+        var cleanCode = codeParam.replace(/\D/g, '');
+        // ОКВ: строго 3 цифры с ведущими нулями
+        if (cleanCode.length <= 3) {
+            cleanCode = cleanCode.padStart(3, '0');
         }
+        var found = BY_CODE[cleanCode];
+        activeDeepLinkCode = found ? cleanCode : null;
+        els.q.value = codeParam;
       }
-    }
-    return Array.from(byUrl.values());
-  }
 
-  function linkFor(s) {
-    var a = document.createElement('a');
-    a.href = s.url;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.textContent = s.name;
-    a.title = s.name;
-    return a;
-  }
-
-  function renderFooter(){
-    var total = RECORDS.length;
-    var s = "В справочнике "+fmtNum(total)+" "+plural(total,["запись","записи","записей"])+
-            ": "+fmtNum(countCurrency)+" "+plural(countCurrency,["валюта страны","валюты стран","валют стран"])+
-            " и "+fmtNum(countUnit)+" "+plural(countUnit,["международная расчётная единица","международные расчётные единицы","международных расчётных единиц"])+
-            (countReview? "; "+fmtNum(countReview)+" "+plural(countReview,["запись помечена","записи помечены","записей помечено"])+" на сверку буквенного кода":"")+
-            ".";
-    elFootLead.innerHTML = escHtml(s).replace(/(\d[\d\u00a0.]*)/g,"<b>$1</b>");
-
-    // Фильтруем источники, чтобы строго соблюсти требование
-    var primaryList = META && META.primary_sources ? META.primary_sources.filter(function(x){return x.role==='primary'}) : [];
-    var secondaryList = META && META.primary_sources ? META.primary_sources.filter(function(x){return x.role==='secondary'}) : [];
-    
-    // Жёстко вычищаем Росстандарт из метаданных (на случай, если старая мета)
-    primaryList = primaryList.filter(function(x){ return x.url.indexOf('gost.ru') < 0; });
-    secondaryList = secondaryList.filter(function(x){ return x.url.indexOf('gost.ru') < 0; });
-
-    var mergedPrimary = mergeSources(primaryList, DEFAULT_PRIMARY_SOURCES);
-    var mergedSecondary = mergeSources(secondaryList, DEFAULT_SECONDARY_SOURCES);
-
-    elSourcesPrimary.innerHTML = '<span class="cap">Источник данных (машиночитаемый снимок):</span>';
-    mergedPrimary.forEach(function(src){ elSourcesPrimary.appendChild(linkFor(src)); });
-
-    elSourcesSecondary.innerHTML = '<span class="cap">Первоисточники и текстовые редакции для сверки:</span>';
-    mergedSecondary.forEach(function(src){ elSourcesSecondary.appendChild(linkFor(src)); });
-    
-    var aboutLink = document.createElement('a');
-    aboutLink.href = 'https://github.com/prog815/okv';
-    aboutLink.target = '_blank';
-    aboutLink.rel = 'noopener noreferrer';
-    aboutLink.textContent = 'О справочнике';
-    aboutLink.title = 'О справочнике (репозиторий проекта)';
-    elSourcesSecondary.appendChild(aboutLink);
-
-    var d = "Справочник носит информационный характер и не является точной копией официального документа. "+
-            "Машиночитаемый снимок подготовлен на основе okv.xlsx сайта classifikators.ru (вторичный агрегатор). "+
-            "Перед применением в документах, имеющих юридическую силу, сверяйтесь с действующей редакцией Общероссийского классификатора валют ОК (МК (ИСО 4217) 003-97) 014-2000 по первоисточникам: Росстандарт и Банк России. "+
-            "ОКВ не содержит курсов валют — для курса обращайтесь к Банку России. "+
-            "Записи с пометкой «сверить» имеют буквенный код, восстановленный транслитерацией из кириллического артефакта источника, и требуют ручной проверки. "+
-            "Международные расчётные единицы (СДР и другие) не являются валютами отдельных государств.";
-    elFootDisc.textContent = d;
-  }
-
-  // ---------- поиск / фильтрация ----------
-  function prepareQuery(q){
-    var raw = String(q||"");
-    var digits = raw.replace(/[^0-9]/g,"");
-    var alpha  = normAlpha(raw);
-    var n = norm(raw);
-    var tokens = n ? n.split(" ").filter(Boolean) : [];
-    var rawTerms = raw.trim().split(/\s+/).filter(Boolean);
-    return {digits:digits, alpha:alpha, tokens:tokens, rawTerms:rawTerms, full:tokens.join(" ")};
-  }
-
-  function scoreRecord(r, pq){
-    var score=0, hasQuery = pq.digits || pq.alpha || pq.tokens.length;
-
-    if(pq.digits){
-      if(r.code === pq.digits) score += 100;
-      else if(pq.digits.length>=2 && r.code.indexOf(pq.digits)===0) score += 70;
-    }
-
-    if(pq.alpha && r.aAlpha){
-      if(r.aAlpha === pq.alpha) score += 90;
-      else if(r.aAlpha.indexOf(pq.alpha)===0) score += 55;
-    }
-
-    if(pq.tokens.length){
-      for(var i=0;i<pq.tokens.length;i++){
-        if(r.blob.indexOf(pq.tokens[i]) < 0) return null;
+      runSearch();
+      if (activeDeepLinkCode) {
+        setTimeout(function(){
+          var el = document.querySelector('.card[data-code="' + activeDeepLinkCode + '"]');
+          if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+        }, 100);
       }
-      var full = pq.full;
-      if(r.nName === full) score += 60;
-      else if(r.nName.indexOf(full)===0) score += 50;
-      else if(r.nName.indexOf(full) >= 0) score += 35;
+    }catch(err){
+      console.error(err);
+      stopLoadingTicker();
+      els.status.innerHTML = '<div class="err">Не удалось загрузить данные.<br><small>' + esc(err.message) + '</small></div>' +
+        '<div style="margin-top:12px"><button class="action-btn" onclick="location.reload()">Повторить</button></div>';
+    }
+  }
 
-      for(var k=0;k<pq.tokens.length;k++){
-        var t=pq.tokens[k];
-        if(r.nName.indexOf(t)>=0) score += 5;
-        if(r.nCountry.indexOf(t)>=0) score += 4;
-        if(r.nAliases.indexOf(t)>=0) score += 3;
-        if(r.nNotes.indexOf(t)>=0) score += 2;
+  function prepareQuery(q) {
+    var raw = String(q||'').trim();
+    var digits = raw.replace(/[^0-9]/g,'');
+    var alpha = normAlpha(raw);
+    var n = normName(raw);
+    var tokens = n ? n.split(' ').filter(Boolean) : [];
+    var isCodeOnly = raw.length > 0 && /^[\d\s\.]+$/.test(raw);
+    return { digits: digits, alpha: alpha, tokens: tokens, full: tokens.join(' '), isCodeOnly: isCodeOnly, raw: raw };
+  }
+
+  function scoreRecord(r, pq) {
+    var score = 0;
+
+    // Строго префиксный поиск по числовому коду
+    if (pq.isCodeOnly && pq.digits) {
+      if (r.code === pq.digits) score += 100;
+      else if (pq.digits.length >= 2 && r.code.indexOf(pq.digits) === 0) score += 75;
+      return score > 0 ? score : null;
+    }
+
+    // Поиск по буквенному коду (alpha)
+    if (pq.alpha) {
+      if (r.aAlpha === pq.alpha) score += 90;
+      else if (r.aAlpha.indexOf(pq.alpha) === 0) score += 55;
+    }
+
+    if (pq.digits && !pq.isCodeOnly) {
+      if (r.code === pq.digits) score += 80;
+      else if (r.code.indexOf(pq.digits) === 0) score += 60;
+    }
+
+    if (pq.tokens.length) {
+      for (var i=0; i<pq.tokens.length; i++) {
+        if (r.blob.indexOf(pq.tokens[i]) < 0) return null; // AND
+      }
+      
+      if (pq.full) {
+        if (r.nName === pq.full) score += 60;
+        else if (r.nName.indexOf(pq.full) === 0) score += 50;
+        else if (r.nName.indexOf(pq.full) >= 0) score += 35;
+      }
+
+      for (var k=0; k<pq.tokens.length; k++) {
+        var t = pq.tokens[k];
+        if (r.nName.indexOf(t) >= 0) score += 5;
+        if (r.nCountry.indexOf(t) >= 0) score += 4;
+        if (r.nAliases.indexOf(t) >= 0) score += 3;
+        if (r.nNotes.indexOf(t) >= 0) score += 2;
       }
     }
 
-    if(hasQuery && score<=0) return null;
+    var hasQuery = pq.digits || pq.alpha || pq.tokens.length;
+    if (hasQuery && score <= 0) return null;
     return score;
   }
 
-  function applyFilters(){
-    var type = elType.value || TYPE_ALL;
-    var pq = prepareQuery(elQ.value);
-    var hasQuery = !!(pq.digits || pq.alpha || pq.tokens.length);
-
+  function runSearch(){
     if (activeDeepLinkCode) {
-      var match = BY_CODE[activeDeepLinkCode];
-      filtered = match ? [match] : [];
-    } else {
-      var base = [];
-      for(var i=0;i<RECORDS.length;i++){
-        var r = RECORDS[i];
-        if(type===TYPE_UNIT && !isUnit(r)) continue;
-        if(type===TYPE_CURRENCY && isUnit(r)) continue;
-        base.push(r);
-      }
-
-      if(hasQuery){
-        var scored=[];
-        for(var a=0;a<base.length;a++){
-          var s = scoreRecord(base[a], pq);
-          if(s!==null) scored.push({r:base[a], s:s});
-        }
-        scored.sort(function(x,y){
-          if(y.s!==x.s) return y.s-x.s;
-          return x.r.code < y.r.code ? -1 : x.r.code > y.r.code ? 1 : 0;
-        });
-        filtered = scored.map(function(o){return o.r;});
-      }else{
-        filtered = base;
-      }
-    }
-
-    filtered._pq = pq;
-    filtered._hasQuery = hasQuery;
-
-    shown = PAGE_SIZE;
-    renderList();
-  }
-
-  // ---------- рендер списка ----------
-  function renderList(){
-    var pq = filtered._pq || EMPTY_PQ;
-    var terms = pq.rawTerms || [];
-    var digits = pq.digits || "";
-    var alphaQ = pq.alpha || "";
-    var total = filtered.length;
-
-    if(total===0){
-      elList.hidden=true; elList.innerHTML="";
-      elState.hidden=false; elState.className="";
-      elState.innerHTML = '<div class="empty">Ничего не найдено. Попробуйте сократить запрос или снять фильтры.</div>';
-      elFound.innerHTML = "Найдено: <b>0</b>";
-      elMore.textContent=""; elMoreWrap.hidden=true;
+      var one = BY_CODE[activeDeepLinkCode];
+      view.list = one ? [one] : [];
+      view.shown = 0;
+      els.results.innerHTML = '';
+      renderCount();
+      renderMore();
+      appendPage();
+      updateClearVisibility();
       return;
     }
 
-    var visible = Math.min(shown, total);
-    elFound.innerHTML = "Найдено: <b>"+total+"</b> · Показано: <b>"+visible+"</b>";
+    var rawQuery = els.q.value;
+    var pq = prepareQuery(rawQuery);
+    var typeFilter = els.typeFilter.value;
 
-    elState.hidden=true; elList.hidden=false;
-    var frag = document.createDocumentFragment();
-    var slice = filtered.slice(0, shown);
-    for(var j=0;j<slice.length;j++) frag.appendChild(buildCard(slice[j], terms, digits, alphaQ));
-    elList.innerHTML=""; elList.appendChild(frag);
+    var pool = DATA;
 
-    if(visible < total){
-      var next = Math.min(shown+PAGE_SIZE, total);
-      elMore.textContent = "Показать ещё +"+(next-visible)+" (показано "+visible+" из "+total+")";
-      elMore.disabled=false;
-      elMoreWrap.hidden=false;
-    }else{
-      elMore.textContent="";
-      elMoreWrap.hidden=true;
+    if (typeFilter === TYPE_UNIT) {
+      pool = pool.filter(function(r) { return r.isIntl === '1'; });
+    } else if (typeFilter === TYPE_CURRENCY) {
+      pool = pool.filter(function(r) { return r.isIntl !== '1'; });
     }
 
-    bindShareButtons();
+    var hasQuery = pq.digits || pq.alpha || pq.tokens.length;
+
+    if (hasQuery) {
+      var scored = [];
+      for(var i=0; i<pool.length; i++){
+        var s = scoreRecord(pool[i], pq);
+        if(s !== null) scored.push({r: pool[i], s: s});
+      }
+      scored.sort(function(x,y){
+        if(y.s !== x.s) return y.s - x.s;
+        return x.r.code < y.r.code ? -1 : x.r.code > y.r.code ? 1 : 0;
+      });
+      pool = scored.map(function(o){ return o.r; });
+    }
+
+    view.list = pool;
+    view.shown = 0;
+    els.results.innerHTML = '';
+    renderCount();
+    renderMore();
+    appendPage();
+    updateClearVisibility();
   }
 
-  // ---------- share ----------
+  function renderCount(){
+    var total = view.list.length;
+    var shown = Math.min(view.shown, total);
+    els.count.innerHTML = 'Найдено: <b>' + fmt(total) + '</b> · Показано: <b>' + fmt(shown) + '</b>';
+  }
+
+  function renderMore(){
+    var total = view.list.length;
+    var shown = Math.min(view.shown, total);
+    if(shown >= total || total === 0){
+      els.more.hidden = true;
+    } else {
+      els.more.hidden = false;
+      els.more.textContent = 'Показать ещё +' + PAGE + ' (показано ' + fmt(shown) + ' из ' + fmt(total) + ')';
+    }
+  }
+
+  function appendPage(){
+    var total = view.list.length;
+    if(total === 0){
+      if (activeDeepLinkCode) {
+        els.results.innerHTML = '<div style="padding:32px 4px;text-align:center;color:var(--muted)">Код не найден. Возможно, запись удалена из классификатора.<br><br>Нажмите «Очистить поиск», чтобы увидеть весь список.</div>';
+      } else {
+        els.results.innerHTML = '<div style="padding:32px 4px;text-align:center;color:var(--muted)">Ничего не найдено. Попробуйте изменить запрос или сбросить фильтры.</div>';
+      }
+      renderCount(); renderMore(); return;
+    }
+
+    var end = Math.min(view.shown + PAGE, total);
+    var html = [];
+    var pq = prepareQuery(els.q.value);
+    var terms = pq.tokens.concat(pq.alpha ? [pq.alpha] : []).concat(pq.digits ? [pq.digits] : []);
+
+    for(var i=view.shown; i<end; i++){
+      html.push(cardHTML(view.list[i], terms, pq.digits, pq.alpha));
+    }
+    els.results.insertAdjacentHTML('beforeend', html.join(''));
+
+    bindShareButtons();
+
+    view.shown = end;
+    renderCount();
+    renderMore();
+  }
+
+  function getShareText(r, url) {
+    var lines = [r.code + ' (' + r.alpha + ') — ' + r.name];
+    if (r.country) {
+      lines.push((r.isIntl === '1' ? 'Используется / эмитент: ' : 'Страны: ') + r.country);
+    }
+    if (r.notes) {
+      lines.push('Пояснение: ' + r.notes);
+    }
+    lines.push('Ссылка: ' + url);
+    return lines.join('\n');
+  }
+
   function bindShareButtons() {
-    var slots = elList.querySelectorAll('.share-slot');
-    slots.forEach(function(slot) {
-      var code = slot.dataset.code || '';
-      var name = slot.dataset.name || '';
-      var rowText = slot.dataset.row || '';
-      
-      var wrap = document.createElement('klassik-share');
-      wrap.setAttribute('catalog', 'okv');
-      wrap.setAttribute('title', 'ОКВ: ' + code + ' — ' + name);
-      wrap.setAttribute('text', rowText);
-      wrap.setAttribute('url', location.origin + location.pathname + '?code=' + encodeURIComponent(code));
-      
+    if (!window.customElements || !customElements.get('klassik-share')) return;
+    
+    var slots = els.results.querySelectorAll('.share-slot');
+    for (var j=0; j<slots.length; j++) {
+      var fallback = slots[j].querySelector('.btn-share-fallback');
+      if (!fallback) continue;
+
+      var code = slots[j].getAttribute('data-code');
+      var nameText = slots[j].getAttribute('data-name');
+      var url = window.location.origin + window.location.pathname + '?code=' + code;
+      var r = BY_CODE[code];
+      var fullText = r ? getShareText(r, url) : (nameText + '\n' + url);
+
+      var el = document.createElement('klassik-share');
+      el.setAttribute('catalog', 'okv');
+      el.setAttribute('title', 'ОКВ: ' + code + ' — ' + nameText);
+      el.setAttribute('text', fullText);
+      el.setAttribute('url', '');
+
       var btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'btn-small';
-      btn.title = 'Поделиться карточкой';
-      btn.innerHTML = '📤 Поделиться';
-      wrap.appendChild(btn);
-      
-      slot.parentNode.replaceChild(wrap, slot);
-    });
+      btn.className = 'action-btn';
+      btn.title = 'Поделиться этой записью';
+      btn.setAttribute('aria-label', 'Поделиться записью');
+      btn.textContent = '📤 Поделиться';
+
+      el.appendChild(btn);
+      slots[j].replaceChild(el, fallback);
+    }
   }
 
-  // ---------- подсветка ----------
-  function hlText(text, rawTerms){
-    var safe = escHtml(text);
-    if(!rawTerms || !rawTerms.length) return safe;
-    var re = new RegExp("("+rawTerms.map(escRe).join("|")+")","gi");
-    return safe.replace(re,"<mark>$1</mark>");
+  if (window.customElements) {
+    customElements.whenDefined('klassik-share').then(bindShareButtons);
   }
+
   function hlCode(code, digits){
-    var safe = escHtml(code);
+    var safe = esc(code);
     if(digits && code.indexOf(digits)===0){
-      return "<mark>"+escHtml(digits)+"</mark>"+escHtml(code.slice(digits.length));
+      return "<mark>"+esc(digits)+"</mark>"+esc(code.slice(digits.length));
     }
     if(digits && code.indexOf(digits)>=0){
       return safe.replace(new RegExp("("+escRe(digits)+")"),"<mark>$1</mark>");
     }
     return safe;
   }
+
   function hlAlpha(alpha, alphaQ){
-    var safe = escHtml(alpha);
+    var safe = esc(alpha);
     var up = String(alpha||"").toUpperCase();
     if(alphaQ && up.indexOf(alphaQ)===0 && alphaQ){
-      return "<mark>"+escHtml(alpha.slice(0,alphaQ.length))+"</mark>"+escHtml(alpha.slice(alphaQ.length));
+      return "<mark>"+esc(alpha.slice(0,alphaQ.length))+"</mark>"+esc(alpha.slice(alphaQ.length));
     }
     return safe;
   }
 
-  // ---------- карточка ----------
-  function buildCard(r, terms, digits, alphaQ){
-    var li = document.createElement("li");
-    var card = document.createElement("article");
-    card.className="card";
-    card.dataset.code = r.code;
-
-    var unit = isUnit(r), review = isReview(r);
-    var kind = unit ? "var(--intl)" : "var(--cur)";
-    var kindBg = unit ? "var(--intl-bg)" : "var(--cur-bg)";
-    var kindFg = unit ? "var(--intl-fg)" : "var(--cur-fg)";
-    card.style.setProperty("--kind", kind);
-    card.style.setProperty("--kind-bg", kindBg);
-    card.style.setProperty("--kind-fg", kindFg);
-
-    var top = document.createElement("div"); top.className="card-top";
-
-    // числовой код
-    var codeBtn = document.createElement("button");
-    codeBtn.type="button"; codeBtn.className="code";
-    codeBtn.innerHTML = hlCode(r.code, digits);
-    codeBtn.title = "Копировать числовой код: "+r.code;
-    codeBtn.dataset.act="copy-code"; codeBtn.dataset.val=r.code;
-    top.appendChild(codeBtn);
-
-    // буквенный код ISO 4217
-    if(r.alpha){
-      var alphaBtn = document.createElement("button");
-      alphaBtn.type="button"; alphaBtn.className="alpha";
-      alphaBtn.innerHTML = hlAlpha(r.alpha, alphaQ);
-      alphaBtn.title = (review? "Буквенный код восстановлён из артефакта источника. " : "")+
-                       "Копировать буквенный код: "+r.alpha;
-      alphaBtn.dataset.act="copy-alpha"; alphaBtn.dataset.val=r.alpha;
-      top.appendChild(alphaBtn);
-    }
-
-    // бейдж: международная расчётная единица
-    if(unit){
-      var ib = document.createElement("button");
-      ib.type="button"; ib.className="badge badge-intl";
-      ib.textContent="Расчётная единица";
-      ib.title="Фильтровать: только международные расчётные единицы";
-      ib.dataset.act="filter-unit";
-      top.appendChild(ib);
-    }
-
-    // бейдж: требует сверки (информационный)
-    if(review){
-      var rb = document.createElement("span");
-      rb.className="badge badge-review";
-      rb.textContent="Сверить буквенный код";
-      rb.title="Буквенный код восстановлен из артефакта источника; требует ручной сверки";
-      top.appendChild(rb);
-    }
-
-    // Actions
-    var actions = document.createElement("div"); actions.className = "card-actions";
+  function cardHTML(r, queryTokens, digitsQ, alphaQ){
+    var isHighlight = (r.code === activeDeepLinkCode);
+    var isIntl = (r.isIntl === '1');
+    var isReview = (r.review === '1');
     
-    var rowBtn = document.createElement("button");
-    rowBtn.type="button"; rowBtn.className="btn-small";
-    var parts = [r.code];
-    if(r.alpha) parts.push(r.alpha);
-    parts.push(r.name);
-    if(r.country) parts.push("Страны: "+r.country);
-    if(r.notes) parts.push("Пояснение: "+r.notes);
-    var fullVal = parts.join("; ");
-    
-    rowBtn.innerHTML = "📋 строка";
-    rowBtn.title = "Скопировать: "+fullVal;
-    rowBtn.dataset.act="copy-full"; rowBtn.dataset.val=fullVal;
-    actions.appendChild(rowBtn);
+    var titleHtml = highlight(r.name, queryTokens);
+    var codeHtml = hlCode(r.code, digitsQ);
+    var alphaHtml = r.alpha ? hlAlpha(r.alpha, alphaQ) : '';
 
-    var shareSlot = document.createElement("span");
-    shareSlot.className = "share-slot";
-    shareSlot.dataset.code = r.code;
-    shareSlot.dataset.name = r.name;
-    shareSlot.dataset.row = fullVal;
-    actions.appendChild(shareSlot);
-
-    top.appendChild(actions);
-    card.appendChild(top);
-
-    // наименование
-    var name = document.createElement("div"); name.className="name";
-    name.innerHTML = hlText(r.name, terms);
-    card.appendChild(name);
-
-    // страны
-    if(r.country){
-      var cr = document.createElement("div"); cr.className="meta-row";
-      var cl = document.createElement("span"); cl.className="lbl";
-      cl.textContent = unit ? "Используется / эмитент:" : "Страны:";
-      var cv = document.createElement("span"); cv.className="val";
-      cv.innerHTML = hlText(r.country, terms);
-      cr.appendChild(cl); cr.appendChild(cv);
-      card.appendChild(cr);
+    var badgesHtml = '';
+    if (isIntl) {
+      badgesHtml += '<button type="button" class="badge intl" data-type="filter-unit" title="Показать только международные расчётные единицы">Расчётная единица</button>';
+    }
+    if (isReview) {
+      badgesHtml += '<span class="badge review" title="Буквенный код восстановлен из артефакта источника; требует ручной сверки">Сверить буквенный код</span>';
     }
 
-    // пояснение
-    if(r.notes){
-      var nr = document.createElement("div"); nr.className="notes-row";
-      nr.innerHTML = '<span class="lbl">Пояснение: </span>'+hlText(r.notes, terms);
-      card.appendChild(nr);
+    var metaHtml = '';
+    if (r.country) {
+      var lbl = isIntl ? 'Используется / эмитент:' : 'Страны:';
+      metaHtml += '<div class="meta-row"><span class="lbl">' + lbl + '</span><span class="val">' + highlight(r.country, queryTokens) + '</span></div>';
+    }
+    if (r.notes) {
+      metaHtml += '<div class="notes-row"><span class="lbl">Пояснение: </span>' + highlight(r.notes, queryTokens) + '</div>';
     }
 
-    // подсказки по флагу
-    if(unit){
-      var hu = document.createElement("div"); hu.className="hint-row hint-intl";
-      hu.textContent = "Международная расчётная единица — не валюта отдельного государства.";
-      card.appendChild(hu);
-    }
-    if(review){
-      var hr = document.createElement("div"); hr.className="hint-row hint-review";
-      hr.textContent = "Буквенный код восстановлен транслитерацией из кириллического артефакта источника (например, ВАМ → BAM). Перед официальным применением сверьте с первоисточником.";
-      card.appendChild(hr);
-    }
+    var actionsHtml = 
+      '<div class="actions">' +
+        '<div class="share-slot" data-code="' + r.code + '" data-name="' + esc(r.name) + '">' +
+          '<button type="button" class="action-btn btn-share-fallback" data-code="' + r.code + '" data-name="' + esc(r.name) + '" title="Поделиться этой записью" aria-label="Поделиться записью">📤 Поделиться</button>' +
+        '</div>' +
+      '</div>';
 
-    li.appendChild(card);
-    return li;
+    return '<article class="card' + (isHighlight ? ' highlight' : '') + '" data-code="' + esc(r.code) + '" title="Карточка: ' + esc(r.name) + '">' +
+      '<div class="row1">' +
+        '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">' +
+          '<button type="button" class="code-btn" data-copy="' + r.code + '" data-code="' + r.code + '" title="Скопировать числовой код: ' + r.code + '">' + codeHtml + '</button>' +
+          (r.alpha ? '<button type="button" class="code-btn norm" data-copy="' + r.alpha + '" title="' + (isReview ? 'Буквенный код восстановлен. ' : '') + 'Скопировать буквенный код: ' + r.alpha + '">' + alphaHtml + '</button>' : '') +
+        '</div>' +
+        '<div class="badges">' + badgesHtml + '</div>' +
+      '</div>' +
+      '<div class="name">' + titleHtml + '</div>' +
+      metaHtml +
+      actionsHtml +
+    '</article>';
   }
 
-  // ---------- навигация ----------
-  function openCode(code){
-    var rec = BY_CODE[code];
-    if(!rec) return;
+  function renderFooter(){
+    var total = (META && META.records_count) || DATA.length || 159;
     
-    activeDeepLinkCode = code;
-    elQ.value=code; syncClear();
-    elType.value=TYPE_ALL;
-    syncCodeToUrl(code);
-    applyFilters();
-    focusCode(code);
+    var countCurrency = 0, countUnit = 0, countReview = 0;
+    DATA.forEach(function(r) {
+      if (r.isIntl === '1') countUnit++; else countCurrency++;
+      if (r.review === '1') countReview++;
+    });
+    
+    var s = "В справочнике " + fmt(total) + " " + plural(total, ["запись", "записи", "записей"]) +
+            ": " + fmt(countCurrency) + " " + plural(countCurrency, ["валюта страны", "валюты стран", "валют стран"]) +
+            " и " + fmt(countUnit) + " " + plural(countUnit, ["международная расчётная единица", "международные расчётные единицы", "международных расчётных единиц"]) +
+            (countReview ? "; " + fmt(countReview) + " " + plural(countReview, ["запись помечена", "записи помечены", "записей помечено"]) + " на сверку буквенного кода" : "") +
+            ".";
+    els.footstats.innerHTML = s.replace(/(\d[\d\u00a0.]*)/g,"<b>$1</b>");
+
+    if (META && META.change_display) {
+      els.footdate.textContent = META.change_display;
+    } else if (META && META.effective_date) {
+      els.footdate.textContent = 'Снимок от ' + fmtRuDate(META.effective_date) + ' (effective)';
+    } else {
+      els.footdate.textContent = 'Дата актуальности: не определена';
+    }
+
+    // 1. Собираем все источники (дефолтные + из меты)
+    var allSources = DEFAULT_PRIMARY_SOURCES.concat(DEFAULT_SECONDARY_SOURCES);
+    if (META && Array.isArray(META.primary_sources)){
+      META.primary_sources.forEach(function(src){
+        if (!src || !src.url) return;
+        var existing = allSources.find(function(d){ return d.url === src.url; });
+        if (existing) {
+          // Не перезаписываем роль classifikators.ru, если она secondary в мете
+          if (src.url.indexOf('classifikators.ru') === -1 && src.role) {
+            existing.role = src.role;
+          }
+          if (src.name) existing.name = src.name;
+        } else {
+          allSources.push(src);
+        }
+      });
+    }
+
+    // 2. Гарантируем, что classifikators.ru всегда primary
+    allSources.forEach(function(s) {
+      if (s.url.indexOf('classifikators.ru') !== -1) {
+        s.role = 'primary';
+      }
+    });
+
+    // 3. Разделяем на primary и secondary
+    var primaryList = allSources.filter(function(s){ return s.url && s.role === 'primary'; });
+    
+    // 4. Исключаем classifikators.ru из secondary
+    var secondaryList = allSources.filter(function(s){ 
+      return s.url && s.role !== 'primary' && s.url.indexOf('classifikators.ru') === -1; 
+    });
+
+    // Дедупликация по URL для надежности
+    var seenUrls = new Set();
+    primaryList = primaryList.filter(function(s) {
+      if (seenUrls.has(s.url)) return false;
+      seenUrls.add(s.url);
+      return true;
+    });
+    secondaryList = secondaryList.filter(function(s) {
+      if (seenUrls.has(s.url)) return false;
+      seenUrls.add(s.url);
+      return true;
+    });
+
+    els.footPrimary.innerHTML = '<div class="row-label">Источник данных (машиночитаемый снимок):</div>' +
+      primaryList.map(function(s){
+        return '<a href="' + esc(s.url) + '" rel="noopener" target="_blank">' + esc(s.name) + '</a>';
+      }).join(" ");
+
+    var secHtml = secondaryList.map(function(s){
+      return '<a href="' + esc(s.url) + '" rel="noopener" target="_blank">' + esc(s.name) + '</a>';
+    }).join(" ");
+    secHtml += ' <a href="https://github.com/prog815/okv" rel="noopener" target="_blank">О справочнике</a>';
+
+    els.footSecondary.innerHTML = '<div class="row-label">Первоисточники и текстовые редакции для сверки:</div>' + secHtml;
   }
 
-  function focusCode(code){
-    setTimeout(function(){
-      var el = document.querySelector('article.card[data-code="'+code+'"]');
-      if(!el) return;
-      document.querySelectorAll(".card.highlight").forEach(function(node){ node.classList.remove("highlight"); });
-      el.classList.add("highlight");
-      el.scrollIntoView({behavior:"smooth", block:"center"});
-      setTimeout(function(){ el.classList.remove("highlight"); }, 1800);
-    }, 30);
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function(resolve, reject){
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok ? resolve() : reject();
+      } catch (e) { reject(e); }
+    });
   }
 
-  // ---------- URL ----------
-  function parseUrlAndApply(){
-    var sp = new URLSearchParams(location.search);
-    var code = sp.get("code");
-    
-    if(code){
-      activeDeepLinkCode = code;
-      elQ.value = code;
-      elType.value = "";
-      syncClear();
-      applyFilters();
-      focusCode(code);
+  var debTimer = null;
+  els.q.addEventListener('input', function(){
+    activeDeepLinkCode = null;
+    clearCodeFromUrl();
+    clearTimeout(debTimer);
+    debTimer = setTimeout(runSearch, 180);
+  });
+
+  els.typeFilter.addEventListener('change', function() {
+    activeDeepLinkCode = null;
+    clearCodeFromUrl();
+    var url = new URL(window.location);
+    if (els.typeFilter.value) url.searchParams.set('type', els.typeFilter.value);
+    else url.searchParams.delete('type');
+    history.replaceState(null, '', url.toString());
+    runSearch();
+  });
+
+  function resetAllAction() {
+    els.q.value = '';
+    els.typeFilter.value = '';
+    activeDeepLinkCode = null;
+    var url = new URL(window.location);
+    url.searchParams.delete('code');
+    url.searchParams.delete('type');
+    history.replaceState(null, '', url.toString());
+    runSearch();
+    els.q.focus();
+  }
+
+  els.clearAll.addEventListener('click', resetAllAction);
+  els.more.addEventListener('click', appendPage);
+
+  els.results.addEventListener('click', function(ev){
+    var target = ev.target;
+
+    var badgeIntl = target.closest('[data-type="filter-unit"]');
+    if (badgeIntl) {
+      els.typeFilter.value = TYPE_UNIT;
+      activeDeepLinkCode = null;
+      var url = new URL(window.location);
+      url.searchParams.delete('code');
+      url.searchParams.set('type', TYPE_UNIT);
+      history.replaceState(null, '', url.toString());
+      runSearch();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
-    activeDeepLinkCode = null;
-    var q = sp.get("q")||"";
-    var type = sp.get("type")||"";
-
-    elQ.value = q; syncClear();
-    elType.value = (type===TYPE_CURRENCY || type===TYPE_UNIT) ? type : TYPE_ALL;
-    applyFilters();
-  }
-
-  function syncUrl(){
-    if(activeDeepLinkCode) return;
-
-    var sp = new URLSearchParams();
-    var q = elQ.value.trim(); if(q) sp.set("q", q);
-    if(elType.value) sp.set("type", elType.value);
-    var qs = sp.toString();
-    var url = location.pathname + (qs?("?"+qs):"");
-    try{ history.replaceState(null,"",url); }catch(e){}
-  }
-
-  function syncCodeToUrl(code) {
-    history.replaceState(null, '', location.pathname + '?code=' + encodeURIComponent(code));
-  }
-
-  function clearCodeFromUrl() {
-    if (location.search.includes('code=')) {
-      history.replaceState(null, '', location.pathname + location.hash);
+    var codeBtn = target.closest('.code-btn');
+    if (codeBtn) {
+      var c = codeBtn.getAttribute('data-copy');
+      copyText(c).then(function(){
+        showToast('Скопировано: ' + c);
+      }).catch(function(){
+        showToast('Не удалось скопировать');
+      });
+      if (codeBtn.classList.contains('norm')) {
+        // Клик по буквенному коду не меняет URL deep-link (URL всегда по цифровому)
+        return;
+      }
+      var codeNorm = codeBtn.getAttribute('data-code');
+      syncCodeToUrl(codeNorm);
+      activeDeepLinkCode = codeNorm;
+      return;
     }
-  }
 
-  // ---------- копирование + тост ----------
-  var toastTimer=null;
-  function toast(msg){
-    elToast.textContent = msg;
-    elToast.classList.add("show");
+    var btnShare = target.closest('.btn-share-fallback');
+    if(btnShare) {
+      var code = btnShare.getAttribute('data-code');
+      var name = btnShare.getAttribute('data-name');
+      var url = window.location.origin + window.location.pathname + '?code=' + code;
+      var r = BY_CODE[code];
+      var shareText = r ? getShareText(r, url) : (name + '\n' + url);
+
+      if (navigator.share) {
+        navigator.share({
+          title: 'ОКВ: ' + code + ' — ' + name,
+          text: shareText
+        }).catch(console.error);
+      } else {
+        copyText(shareText).then(function(){
+          showToast('Сообщение скопировано');
+        });
+      }
+      return;
+    }
+  });
+
+  var toastTimer = null;
+  function showToast(msg){
+    els.toast.textContent = msg;
+    els.toast.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ elToast.classList.remove("show"); }, 1800);
+    toastTimer = setTimeout(function(){ els.toast.classList.remove('show'); }, 1800);
   }
-  function copyText(text, label){
-    var done=function(){ toast(label); };
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(done).catch(function(){ fallbackCopy(text); done(); });
-    }else{ fallbackCopy(text); done(); }
-  }
-  function fallbackCopy(text){
-    var ta=document.createElement("textarea");
-    ta.value=text; ta.setAttribute("readonly",""); ta.style.position="absolute"; ta.style.left="-9999px";
-    document.body.appendChild(ta); ta.select();
-    try{ document.execCommand("copy"); }catch(e){}
-    document.body.removeChild(ta);
-  }
-
-  function onListClick(e){
-    var btn = e.target.closest("[data-act]");
-    if(!btn) return;
-    var act = btn.dataset.act, val = btn.dataset.val;
-    if(act==="copy-code") {
-      copyText(val, "Числовой код "+val+" скопирован");
-      activeDeepLinkCode = val;
-      syncCodeToUrl(val);
-    }
-    else if(act==="copy-alpha") copyText(val, "Буквенный код "+val+" скопирован");
-    else if(act==="copy-full") copyText(val, "Скопировано: "+val);
-    else if(act==="filter-unit"){ 
-      activeDeepLinkCode = null;
-      clearCodeFromUrl();
-      elType.value=TYPE_UNIT; applyFilters(); syncUrl(); focusTop(); 
-    }
-  }
-
-  // ---------- события ----------
-  function syncClear(){ elBox.classList.toggle("has-val", !!elQ.value); }
-  function focusTop(){ window.scrollTo({top:0,behavior:"smooth"}); }
-
-  var deb=null;
-  function onInput(){
-    activeDeepLinkCode = null;
-    clearCodeFromUrl();
-    syncClear();
-    clearTimeout(deb);
-    deb=setTimeout(function(){ applyFilters(); syncUrl(); }, DEBOUNCE_MS);
-  }
-
-  elQ.addEventListener("input", onInput);
-  elQ.addEventListener("search", function(){ 
-    activeDeepLinkCode = null;
-    clearCodeFromUrl();
-    syncClear(); applyFilters(); syncUrl(); 
-  });
-  elClear.addEventListener("click", function(){ 
-    activeDeepLinkCode = null;
-    clearCodeFromUrl();
-    elQ.value=""; syncClear(); applyFilters(); syncUrl(); elQ.focus(); 
-  });
-  elType.addEventListener("change", function(){ 
-    activeDeepLinkCode = null;
-    clearCodeFromUrl();
-    applyFilters(); syncUrl(); 
-  });
-  
-  $("resetFilters").addEventListener("click", function(e){
-    e.preventDefault();
-    activeDeepLinkCode = null;
-    clearCodeFromUrl();
-    elQ.value="";
-    elType.value="";
-    syncClear();
-    applyFilters();
-    syncUrl();
-    elQ.focus();
-  });
-
-  elMore.addEventListener("click", function(){ shown += PAGE_SIZE; renderList(); });
-  elList.addEventListener("click", onListClick);
-
-  window.addEventListener("popstate", function(){ parseUrlAndApply(); });
 
   function onScroll(){
-    var y = window.scrollY || document.documentElement.scrollTop || 0;
-    var docH = document.documentElement.scrollHeight;
-    var winH = window.innerHeight;
-    elTop.style.display = (y>SCROLL_THRESHOLD) ? "block":"none";
-    elBottom.style.display = (y>SCROLL_THRESHOLD && (y+winH) < (docH-40)) ? "block":"none";
+    var y = window.scrollY || document.documentElement.scrollTop;
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    els.fabUp.classList.toggle('show', y > 300);
+    els.fabDown.classList.toggle('show', y > 300 && y < max - 40);
   }
-  window.addEventListener("scroll", onScroll, {passive:true});
-  window.addEventListener("resize", onScroll);
-  elTop.addEventListener("click", function(){ window.scrollTo({top:0,behavior:"smooth"}); });
-  elBottom.addEventListener("click", function(){ window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"}); });
 
-  syncClear();
-  loadAll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  els.fabUp.addEventListener('click', function(){ window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  els.fabDown.addEventListener('click', function(){ window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); });
+
+  window.addEventListener('popstate', function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var codeParam = urlParams.get('code');
+    var typeParam = urlParams.get('type');
+
+    if (typeParam === TYPE_CURRENCY || typeParam === TYPE_UNIT) els.typeFilter.value = typeParam;
+    else els.typeFilter.value = '';
+
+    if (codeParam) {
+      var cleanCode = codeParam.replace(/\D/g, '');
+      if (cleanCode.length <= 3) {
+          cleanCode = cleanCode.padStart(3, '0');
+      }
+      var found = BY_CODE[cleanCode];
+      activeDeepLinkCode = found ? cleanCode : null;
+      els.q.value = codeParam;
+    } else {
+      activeDeepLinkCode = null;
+      els.q.value = '';
+    }
+    runSearch();
+  });
+
+  boot();
 })();
 </script>
 </body>
