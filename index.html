@@ -320,7 +320,7 @@
 <div class="wrap" id="main-content">
   <header class="hero">
     <h1>💱 ОКВ — Общероссийский классификатор валют</h1>
-    <p class="sub">Мгновенный поиск по числовому коду (643, 840, 008), буквенному коду ISO 4217 (RUB, USD) и наименованию. Плоский справочник (ОК (МК (ИСО 4217) 003-97) 014-2000).</p>
+    <p class="sub">Мгновенный поиск по числовому коду (643, 840, 008), буквенному коду ISO 4217 (RUB, USD) и наименованию. Плоский справочник ОК (МК (ИСО 4217) 003-97) 014-2000.</p>
   </header>
 
   <div class="notice">
@@ -393,7 +393,7 @@
 
     <p class="disc" id="footdisc">
       Справочник носит справочный характер и не является точной копией официального документа.
-      Машиночитаемый снимок подготовлен на основе okv.xlsx сайта classifikators.ru (вторичный агрегатор).
+      Машиночитаемый снимок подготовлен на основе открытых данных сайта classifikators.ru.
       Перед применением в документах, имеющих юридическую силу, сверяйтесь с действующей редакцией Общероссийского классификатора валют.
       Записи с пометкой «сверить» имеют буквенный код, восстановленный транслитерацией из кириллического артефакта источника.
       Международные расчётные единицы (СДР и другие) не являются валютами отдельных государств.
@@ -608,7 +608,6 @@
 
       if (codeParam) {
         var cleanCode = codeParam.replace(/\D/g, '');
-        // ОКВ: строго 3 цифры с ведущими нулями
         if (cleanCode.length <= 3) {
             cleanCode = cleanCode.padStart(3, '0');
         }
@@ -970,12 +969,14 @@
     els.footPrimary.innerHTML = '<div class="row-label">Источник данных (машиночитаемый снимок):</div>' +
       primaryList.map(function(s){
         return '<a href="' + esc(s.url) + '" rel="noopener" target="_blank">' + esc(s.name) + '</a>';
-      }).join(" ");
+      }).join(", ");
 
     var secHtml = secondaryList.map(function(s){
       return '<a href="' + esc(s.url) + '" rel="noopener" target="_blank">' + esc(s.name) + '</a>';
-    }).join(" ");
-    secHtml += ' <a href="https://github.com/prog815/okv" rel="noopener" target="_blank">О справочнике</a>';
+    }).join(", ");
+    
+    if (secHtml) secHtml += ', ';
+    secHtml += '<a href="https://github.com/prog815/okv" rel="noopener" target="_blank">О справочнике</a>';
 
     els.footSecondary.innerHTML = '<div class="row-label">Первоисточники и текстовые редакции для сверки:</div>' + secHtml;
   }
